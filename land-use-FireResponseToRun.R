@@ -47,6 +47,7 @@ fuelPath <- file.path("fire", "fuels", paste0("FuelType-", timestep, ".img"))
 timePath <- file.path("DFFS-output", paste0("TimeOfLastFire-",timestep, ".img"))
 cutHistoryPath <- paste0("land-use-maps/cutHistory.img")
 severityHistoryPath <- paste0("logs/severityHistory.img")
+dataPerTimeStepPath <- paste0("logs/trendsPerTimeStep.csv")
 
 #read in rasters 
 luMaster <- raster(landUseMasterPath)
@@ -64,6 +65,10 @@ if (timestep==1)# generate new cutHistory
   
   severityHistory <- luMaster
   values(severityHistory)[!(is.na(values(luMaster) ))] <- -1
+  
+  #overwrite log file and trendsperTimeStep file 
+  write(" ", paste0("logs/logfile",".txt"), append=F)
+  write.table( data.frame(TimeStep= numeric() , CellsCut = numeric(), CutsNearDevelopment = numeric()  , CutsForPostFireSalvage = numeric(), rejectedProximityCuts=numeric(), rejectedSalvageCuts= numeric(), CellsWithFire=numeric()) ,  file=dataPerTimeStepPath ,  append = F,  sep=',',  row.names=F,  col.names=T )
 }else #read in cutHistory  
 {
   cutHistory <- raster(cutHistoryPath)
@@ -71,6 +76,7 @@ if (timestep==1)# generate new cutHistory
 }
 
 print("Rasters Read!")
+
 # end of setup. 
 
 
@@ -79,8 +85,10 @@ print("Rasters Read!")
 # set up limits for cutting on private and forest service
 #total cells active cells -- 300*312 - length(inSquareInactiveCells) - length(outOfSquareCells) = 54271
 # 54271*.05 = 2714 
-privateLimit =  1114 # 1 cell = 7.29 ha = acre
-fsLimit = 1600
+maxPercentCut <- .04 #max percent of cells that will be cut each year 
+maxCutCells<- 54271 * maxPercentCut 
+fsLimit<- floor(maxCutCells * 0.6766776) #(30414+12080)/(14464+5836+4 +30414+12080) #these numbers come from freq(luMaster)
+privateLimit <- floor(maxCutCells* 0.3233224) # (14464+5836+4)/(14464+5836+4 +30414+12080)
 
 
 
@@ -94,7 +102,7 @@ outOfSquareCells <- which(is.na(values(luMaster)))  # out of square cells
 outOfBoundsCells <- which(suR ==0) # inactive sites and out of square cells 
 inSquareInactiveCells <- (setdiff(outOfBoundsCells, outOfSquareCells )) # insquare cells that are inactive 
 unforestedCells <- which(suR == 1) # un forested cells 
-wildernessCells <- which(values(luMaster)== 1111) # | values == 111 # wilderness area cells 
+wildernessCells <- which(values(luMaster)== 1111) # | values == 111 # both values are wilderness area cells (111 is only 4 cells though) 
 
 #delete cuts that are older than 15 years 
 recentCuts <-  which(!(values(cutHistory) < timestep-14) & values(cutHistory)> 0) # cuts that happened recently and dont need to be cut again 
@@ -139,11 +147,11 @@ linesLog <- c(linesLog, paste(length(proximityToDevelopmentCells), "cells identi
 
 
 
-#this is cutting in areas surrounding development ----
+#Section - cutting in areas surrounding development ----
 dR <- developRaster
 values(dR)[which(values(developRaster) < 580)] <- 1
 
-neighM <- matrix(1, ncol=3, nrow = 3) # not sure on the sizing here  #this is the sizing for cutting? 
+neighM <- matrix(1, ncol=3, nrow = 3) # clear within a quarter of a mile of important structures -- from SISKIYOU COUNTY WILDFIRE PROTECTION PLAN APRIL 23, 2008
 neighM[2,2] <- 0
 
 #(dR)[which(values(developRaster) > 581)]
@@ -156,8 +164,11 @@ cells <- proximityToDevelopmentCells
 #values(dR)[adjacent(dR, cells, directions=16, pairs=F, target=NULL, sorted=T,  include=FALSE, id=FALSE)] #<- 589
 
 #take into account slope. 
-df <- data.frame(cellNum=adjacent(dR, cells, directions=neighM, pairs=F, target=NULL, sorted=T,  include=FALSE, id=T), slopes=values(slopeRaster)[adjacent(dR, cells, directions=neighM, pairs=F, target=NULL, sorted=T,  include=FALSE, id=T)]) 
+rm(adj)
+adj<- adjacent(dR, cells, directions=neighM, pairs=F, target=NULL, sorted=T,  include=FALSE, id=T)
+df <- data.frame(cellNum=adj, slopes=values(slopeRaster)[adj]) 
 df <- rbind(df,data.frame(cellNum=cells, slopes=values(slopeRaster)[cells]))
+
 #TODO - get rid of the extra assignment steps ==== 
 values(dR)[subset(df, df$slopes <30)$cellNum] <- 1020
 values(dR)[subset(df, df$slopes >30)$cellNum] <- 1021 
@@ -171,7 +182,7 @@ values(dR)[which(values(dR) == 0)] <-1
 
 
 
-# clear cutting (and planting?) burnt forests ----
+# Section - Salavage logging - clear cutting (and planting?) burnt forests ----
 # might need addition qualifier of "if fire was super bad" (probably best to be implemented as if fire has reach XX% of active cells)
 rm(cells)
 cells <- which(values(severityRaster) > 2 & values(severityRaster)<6)
@@ -190,16 +201,47 @@ values(dR)[which(values(dR) == 581)] <-1 # set the open space to grow
 developedCells <- which(values(dR) >581 &values(dR) <1000 )# developed cells that werent hit by fire... 
 values(dR)[developedCells] <- 1 #set for forest to growth 
 
-# Section - change navalue, output plots, write land-use raster ---- 
-values(dR)[DestroyCellsThatShouldBeNA] <- 0  #DONE # get rid of prohibited cuts  
-values(dR)[dontCuts] <-1  #DONE # exclude cells that are unforested, wilderness areas, or that have been cut recently 
+# Section - change navalue, exclude prohibited cuts, apply cut limit. 
 
-# temp section - output rasters ----
+#curious about how many cuts were proposed in inactive and prohibited sites 
+prepostFireClearing <- sum(values(dR)==30, na.rm = T)+sum(values(dR)==31, na.rm = T)
+preproximityClearing <- sum(values(dR)==20, na.rm = T)+sum(values(dR)==21, na.rm = T)
+
+values(dR)[DestroyCellsThatShouldBeNA] <- 0  #DONE # get rid of prohibited cuts  
+values(dR)[dontCuts] <-1  #DONE # exclude cuts in cells that are unforested, wilderness areas, or that have been cut recently 
+
+# apply cut limit to remaining cuts 
+cellsCut <- which(values(dR)>1)
+ownerDF <- data.frame(cell= cellsCut,owner= as.integer(values(luMaster)[cellsCut]/1000))
+FS <- subset(ownerDF, owner==1)$cell
+pri <- subset(ownerDF, owner==0)$cell
+
+if(length(pri) > privateLimit)
+{
+  numToRemove<- length(pri) - privateLimit
+  values(dR)[pri[sample(1:length(pri), numToRemove)]] <- 1
+  
+  print(paste("Reached private cut limit. Removing",numToRemove,"proposed cuts."))
+  linesLog <- c(linesLog, paste("Reached private cut limit. Removing",numToRemove,"proposed cuts."))
+}
+
+if(length(FS) > fsLimit) 
+{
+  numToRemove<- length(FS) - fsLimit
+  values(dR)[FS[sample(1:length(FS), numToRemove)]] <- 1
+  
+  print(paste("Reached Forest Service cut limit. Removing",numToRemove,"proposed cuts."))
+  linesLog <- c(linesLog, paste("Reached Forest Service cut limit. Removing",numToRemove,"proposed cuts."))
+}
+
+# Section - output extra logs, output plots, write land-use raster ---- 
 #stores cut history 
-values(cutHistory)[which(values(dR)>1)] <- timestep
+values(cutHistory)[cellsCut] <- timestep
 values(severityHistory)[which(values(severityRaster)>2)] <- timestep
 
-cutsMade<-sum(values(dR)>1)
+CellsWithFire =sum(values(severityHistory) ==timestep, na.rm = T)
+
+cutsMade<-sum(values(dR)>1, na.rm = T)
 
 # logging cuts made to file 
 print(paste0("cells cut: ", cutsMade))
@@ -209,6 +251,11 @@ linesLog <- c(linesLog, paste0("ha cut: ", cutsMade*7.29))
 totalCutsPossible <- 310*312 - length(outOfBoundsCells) - length(unforestedCells) - length(wildernessCells)
 print(paste0("percent cut (total cells -OoB-UF-WA): ", round(cutsMade/(totalCutsPossible)*100,2), "%" ))
 linesLog <- c(linesLog, paste0("percent cut (total cells -OoB-UF-WA): ", round(cutsMade/(totalCutsPossible)*100,2), "%" ))
+
+
+postFireClearing <- sum(values(dR)==30, na.rm = T)+sum(values(dR)==31, na.rm = T)
+proximityClearing <- sum(values(dR)==20, na.rm = T)+sum(values(dR)==21, na.rm = T)
+timestepData <- data.frame(TimeStep= timestep, CellsCut = cutsMade, CutsNearDevelopment = proximityClearing , CutsForPostFireSalvage = postFireClearing, rejectedProximityCuts= preproximityClearing- proximityClearing, rejectedSalvageCuts= prepostFireClearing- postFireClearing, CellsWithFire=CellsWithFire )
 
 print(freq(dR))
 
@@ -224,6 +271,8 @@ if (TRUE){ # printing out graphs at each time step
 writeRaster(dR, luOutputPath, overwrite = T,format="HFA", datatype="INT2S", NAvalue=0)
 writeRaster(cutHistory, cutHistoryPath, overwrite =T, format="HFA", datatype="INT2S", NAvalue=0)
 writeRaster(severityHistory, severityHistoryPath, overwrite=T, format="HFA", datatype="INT2S", NAvalue=0)
+write.table( timestepData,  file=dataPerTimeStepPath ,  append = T,  sep=',',  row.names=F,  col.names=F )
+
 
 # end timer ----
 end_time <- Sys.time()
