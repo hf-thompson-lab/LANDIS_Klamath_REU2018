@@ -76,17 +76,28 @@ if (FALSE){
   freq(tR)
   writeRaster(tR, filename ="test.img", format="HFA", dataType="INT2S")
   
+
+  freq(fuelRaster)
+  # fuelVal in 1:12. 
+  fuelVal = 1
+  tR <- fuelRaster
+  destroys <- which(values(tR != fuelVal))
+  values(tR)[destroys] <- 0 
   
-  imageF <- im(matrix(values(fuelRaster), 310, 312))
+  imageF <- im(matrix(values(tR), 310, 312))
   plot(imageF)
-  plot(fuelRaster)
-  ci <- connected(imageF, method= "C")
+
+  ci <- connected(imageF, method= "C",background = 0)
   plot(ci)
   
-  tR <- fuelRaster
   values(tR) <- as.integer(ci$v)
   plot(tR)
   freq(tR)
+  
+  # take the fuels that are connected to 20 or more for each fuel type and tag them... 
+  
+  
+  
   writeRaster(tR, filename ="test.img", format="HFA", dataType="INT2S")
   
   values(tR)[values(tR) ==1] <- 30

@@ -11,9 +11,13 @@
 
 # rules:  
 # 30 percent slope is the max for mechanical thinning - uplands
+# right now greater than 54 degree slope will not be cut. 
+
 # mechanical treatments would be used to prevent fire from entering land near developed area. 
 # cuts are assumed to last 15 years and after 15 years the area is eligible to cut again
 # 
+# cut limit per year is 4% of total active cells - this is then divided between FS and private cut limits 
+    # in a bad year the FS be able to cut an extra 50 to 200 cells
 # land around developed area will be cut if there is enough fire within 2.2 sqmi of the development (not sure on the size)
 # post fire salvage logging in areas that were not completely destroyed
 
@@ -68,7 +72,7 @@ if (timestep==1)# generate new cutHistory
   
   #overwrite log file and trendsperTimeStep file 
   write(" ", paste0("logs/logfile",".txt"), append=F)
-  write.table( data.frame(TimeStep= numeric() , CellsCut = numeric(), CutsNearDevelopment = numeric()  , CutsForPostFireSalvage = numeric(), rejectedProximityCuts=numeric(), rejectedSalvageCuts= numeric(), CellsWithFire=numeric()) ,  file=dataPerTimeStepPath ,  append = F,  sep=',',  row.names=F,  col.names=T )
+  write.table( data.frame(TimeStep= numeric() , CellsCut = numeric(),FSCuts= numeric(), PrivateCuts= numeric(), CutsNearDevelopment = numeric()  , CutsForPostFireSalvage = numeric(), rejectedProximityCuts=numeric(), rejectedSalvageCuts= numeric(), CellsWithFire=numeric()) ,  file=dataPerTimeStepPath ,  append = F,  sep=',',  row.names=F,  col.names=T )
 }else #read in cutHistory  
 {
   cutHistory <- raster(cutHistoryPath)
@@ -130,6 +134,19 @@ cells <- which(values(developRaster) > 580) #581 is developed open space 582-584
 neighborhoodMatrix <- matrix(1, ncol=9, nrow = 9) # not sure on the sizing here 
 neighborhoodMatrix[5,5] <- 0
 
+# this gets rid of the boxy fire response cuts  
+nm <- neighborhoodMatrix
+corners <- c(1:3, 6:9)
+for (r in corners)
+{
+  for (c in corners)
+  {
+    if (( r+c ==2 | (r+c==3) | (r+c ==4) |abs(r-c) ==8 | (abs(r-c)==7) | (abs(r-c) ==6) |r+c ==16 | (r+c==18) | (r+c ==17)) )
+      nm[r,c] <- NA
+  }
+}
+neighborhoodMatrix <- nm
+
 sumTable <- data.frame(cell=numeric(length(cells)), mean=numeric(length(cells)), median=numeric(length(cells)), count=numeric(length(cells)) )
 sV <- values(severityRaster)
 for (i in 1:length(cells)) # this could be sped up 
@@ -170,8 +187,9 @@ df <- data.frame(cellNum=adj, slopes=values(slopeRaster)[adj])
 df <- rbind(df,data.frame(cellNum=cells, slopes=values(slopeRaster)[cells]))
 
 #TODO - get rid of the extra assignment steps ==== 
-values(dR)[subset(df, df$slopes <30)$cellNum] <- 1020
+values(dR)[subset(df, df$slopes <31)$cellNum] <- 1020
 values(dR)[subset(df, df$slopes >30)$cellNum] <- 1021 
+values(dR)[subset(df, df$slopes >60)$cellNum] <- 1
 
 #TODO - check to make sure that this <585 -> 0 and then 0 -> 1 doesnt matter and could just be changed to this 1 
 # ie make sure that there are no 0's in the map before this next line of code. 
@@ -190,9 +208,9 @@ cells <- which(values(severityRaster) > 2 & values(severityRaster)<6)
 rm(df)
 df <- data.frame(cellNum=adjacent(dR, cells, directions=8, pairs=F, target=NULL, sorted=T,  include=FALSE, id=T), slopes=values(slopeRaster)[adjacent(dR, cells, directions=8, pairs=F, target=NULL, sorted=T,  include=FALSE, id=T)]) 
 df <- rbind(df,data.frame(cellNum=cells, slopes=values(slopeRaster)[cells]))
-values(dR)[subset(df, df$slopes <30)$cellNum] <- 2030
+values(dR)[subset(df, df$slopes <31)$cellNum] <- 2030
 values(dR)[subset(df, df$slopes >30)$cellNum] <- 2031
-
+values(dR)[subset(df, df$slopes >60)$cellNum] <- 1
 
 values(dR)[which(values(dR) == 2030)] <-30 
 values(dR)[which(values(dR) == 2031)] <-31 
@@ -255,7 +273,7 @@ linesLog <- c(linesLog, paste0("percent cut (total cells -OoB-UF-WA): ", round(c
 
 postFireClearing <- sum(values(dR)==30, na.rm = T)+sum(values(dR)==31, na.rm = T)
 proximityClearing <- sum(values(dR)==20, na.rm = T)+sum(values(dR)==21, na.rm = T)
-timestepData <- data.frame(TimeStep= timestep, CellsCut = cutsMade, CutsNearDevelopment = proximityClearing , CutsForPostFireSalvage = postFireClearing, rejectedProximityCuts= preproximityClearing- proximityClearing, rejectedSalvageCuts= prepostFireClearing- postFireClearing, CellsWithFire=CellsWithFire )
+timestepData <- data.frame(TimeStep= timestep, CellsCut = cutsMade,FSCuts=length(FS), PrivateCuts=length(pri) , CutsNearDevelopment = proximityClearing , CutsForPostFireSalvage = postFireClearing, rejectedProximityCuts= preproximityClearing- proximityClearing, rejectedSalvageCuts= prepostFireClearing- postFireClearing, CellsWithFire=CellsWithFire )
 
 print(freq(dR))
 
