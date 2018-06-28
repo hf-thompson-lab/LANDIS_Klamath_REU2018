@@ -65,23 +65,26 @@ if (FALSE){
   library(raster)
   library(spatstat)
   
-  image <- im(matrix(values(severityRaster), 310, 312))
-  ci <- connected(image)
-  ci <- connected(image, method= "C", background = 0)
-  plot(ci)
-  plot(severityRaster)
-  tR <- severityRaster
-  values(tR) <- as.integer(ci$v)
-  plot(tR)
-  freq(tR)
-  writeRaster(tR, filename ="test.img", format="HFA", dataType="INT2S")
-  
+  # image <- im(matrix(values(severityRaster), 310, 312))
+  # ci <- connected(image)
+  # ci <- connected(image, method= "C", background = 0)
+  # plot(ci)
+  # plot(severityRaster)
+  # tR <- severityRaster
+  # values(tR) <- as.integer(ci$v)
+  # plot(tR)
+  # freq(tR)
+  # writeRaster(tR, filename ="test.img", format="HFA", dataType="INT2S")
+  # 
 
   freq(fuelRaster)
   # fuelVal in 1:12. 
-  fuelVal = 1
+  fuelVal = 4
+  i<-0
+  for (fuelVal in 1:7){
+    i<- i+1
   tR <- fuelRaster
-  destroys <- which(values(tR != fuelVal))
+  destroys <- which(values(tR != i))
   values(tR)[destroys] <- 0 
   
   imageF <- im(matrix(values(tR), 310, 312))
@@ -92,7 +95,28 @@ if (FALSE){
   
   values(tR) <- as.integer(ci$v)
   plot(tR)
-  freq(tR)
+ # freq(tR)
+  
+  fq <-as.data.frame( freq(tR))
+  
+  #TODO -- weird error -----
+
+  nfq<-na.omit(fq[(fq$count>20 & fq$count<12000),])
+  nfq<- nfq[order(-nfq$count),]
+  nfq<- cbind(nfq, rank=length(nfq$value):1 )
+  print(nfq)
+  
+  temp <- values(tR)
+  mapper <- function (x){ y<-nfq$rank[which(nfq$value== x)];  if(length(y) == 0){return(NA) }else{return(y)}} #which returns integer(0) on not found, we need NA 
+  temp2 <- sapply(temp, mapper)
+  
+  hist(temp2)
+  tR1 <- fuelRaster
+  replace<-!is.na(temp2)
+  values(tR1)[replace]<- temp2[replace]*(10^i)
+  
+  }
+  plot(tR1)
   
   # take the fuels that are connected to 20 or more for each fuel type and tag them... 
   
