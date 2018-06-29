@@ -81,6 +81,7 @@ if (timestep==1)# generate new cutHistory
 
 print("Rasters Read!")
 
+ONLYFIREBREAK <-T
 # end of setup. 
 
 
@@ -119,7 +120,7 @@ DestroyCellsThatShouldBeNA <- outOfBoundsCells #set to 0 [NA] later (in land use
 linesLog <- c(linesLog, paste("OoB #:", length(outOfBoundsCells)), paste("WA #:", length(wildernessCells)),paste("UF #:", length(unforestedCells)))
 
 
-
+if (!ONLYFIREBREAK){
 # Section - identifying cells with fire that is within a square of 9 cells (2.279 mi^2 or 590.49 ha) from developed areas ----
 
 # metadata for developRaster if you want it #developed areas # 580 -584 
@@ -223,11 +224,17 @@ values(dR)[developedCells] <- 1 #set for forest to growth
 
 # Section - get fuel break cuts ----
 source("FindFuelBreaks.R")
-fuelBreaks <- findFuelBreaks(fuelRaster, 20, 12)
+fuelBreaks <- findFuelBreaks(fuelRaster, 35, 20)
 #values(fuelBreaks)[which(!is.na(values(fuelBreaks)) )] <- 150 # this line is probably not needed... 
 values(dR)[which(!is.na(values(fuelBreaks)))] <- 150
 #plot(dR)
-
+}else{#ONLYFIREBREAKS 
+  source("FindFuelBreaks.R")
+  fuelBreaks <- findFuelBreaks(fuelRaster, 35, 20)
+  values(fuelBreaks)[which(!is.na(values(fuelBreaks)) )] <- 150 # this line is probably not needed... 
+  values(fuelBreaks)[which(is.na(values(fuelBreaks)) )]<-0
+  dR <- fuelBreaks
+}
 
 
 # Section - change navalue, exclude prohibited cuts, apply cut limit. 
