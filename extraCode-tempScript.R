@@ -60,11 +60,7 @@ if (FALSE){
   
   # 
   
-  
-  # connected components with images 
-  library(raster)
-  library(spatstat)
-  
+
   # image <- im(matrix(values(severityRaster), 310, 312))
   # ci <- connected(image)
   # ci <- connected(image, method= "C", background = 0)
@@ -76,20 +72,32 @@ if (FALSE){
   # freq(tR)
   # writeRaster(tR, filename ="test.img", format="HFA", dataType="INT2S")
   # 
-
-  freq(fuelRaster)
+# 
+#   freq(fuelRaster)
   # fuelVal in 1:12. 
-  fuelVal = 4
-  i<-0
-  for (fuelVal in 1:7){
-    i<- i+1
+  
+  # connected components with images 
+  library(raster)
+  library(spatstat)
+  tR1<-fuelRaster
+  values(tR1)[which(values(tR1) >0)] <- -1 
+  plot(tR1)
+  # take the fuels that are connected to 20 or more for each fuel type and tag them with a unique label... 
+  for (fuelVal in 1:12){
+
   tR <- fuelRaster
-  destroys <- which(values(tR != i))
-  values(tR)[destroys] <- 0 
+  print(fuelVal)
+  destroys <- which(values(tR != fuelVal))
+  if(length(destroys)>= length(values(fuelRaster))-20)
+  {
+    print("bad")
+    next() 
+  }
+   values(tR)[destroys] <- 0 
   
   imageF <- im(matrix(values(tR), 310, 312))
   plot(imageF)
-
+  
   ci <- connected(imageF, method= "C",background = 0)
   plot(ci)
   
@@ -98,11 +106,10 @@ if (FALSE){
  # freq(tR)
   
   fq <-as.data.frame( freq(tR))
-  
-  #TODO -- weird error -----
 
-  nfq<-na.omit(fq[(fq$count>20 & fq$count<12000),])
+  nfq<-na.omit(subset(fq,(fq$count>20 & fq$count<12000)))
   nfq<- nfq[order(-nfq$count),]
+  if (length(nfq$value) == 0) {print("empty nfq"); next()}
   nfq<- cbind(nfq, rank=length(nfq$value):1 )
   print(nfq)
   
@@ -111,21 +118,83 @@ if (FALSE){
   temp2 <- sapply(temp, mapper)
   
   hist(temp2)
-  tR1 <- fuelRaster
-  replace<-!is.na(temp2)
-  values(tR1)[replace]<- temp2[replace]*(10^i)
   
+  replace<-!is.na(temp2)
+  values(tR1)[replace]<- temp2[replace]*(10^fuelVal)
   }
+  
+  temp <- values(tR1)
+  values(tR1)[which(temp==-1 | temp==0)] <-NA
   plot(tR1)
   
-  # take the fuels that are connected to 20 or more for each fuel type and tag them... 
+  
+  freq(tR1)
+  
+  newfq <- data.frame(freq(tR1))
+  newerfq<- na.omit(newfq[order(-newfq$count),])
+  toDivide <- head(newerfq, n=12)
+
+ # writeRaster(tR1, filename ="test.img", format="HFA", dataType="INT2S")
+  
+  toFind <- toDivide$value[1]
   
   
+  emptyR<-fuelRaster
+  values(emptyR)[which(values(emptyR) >0)] <- -1 
+  plot(emptyR)
   
-  writeRaster(tR, filename ="test.img", format="HFA", dataType="INT2S")
+  svals <- values(tR1) 
   
-  values(tR)[values(tR) ==1] <- 30
-  plot(tR)
+  cellsFound <- which(svals == toFind)
+  values(emptyR)[cellsFound] <- 3
+  plot(emptyR)
+  freq(emptyR)
+  
+  maxWidth <- 300 
+  
+  scf<- sort(cellsFound)
+  head(scf)
+#  values(emptyR)[head(cellsFound, n= length(cellsFound)/2)] <-5
+  
+ # values(emptyR)[(cellsFound[1400:(length(cellsFound)/2)])] <-25
+  
+  values(emptyR)[which(values(emptyR) ==-1)] <- 0 
+  eVals <- matrix(values(emptyR), c(310,312) ) 
+  
+  hist(colSums(eVals)) 
+  
+  # equilibrium index of list with tolerance for equality #https://www.geeksforgeeks.org/equilibrium-index-of-an-array/ 
+  equalibrium <- function(arr, tol) {
+    sum <- 0 #initialize sum of whole array
+    leftsum <- 0 # initialize leftsum
+    n<- length(arr)
+    sum <- sum(arr)
+    
+    for (i  in 1:(n-1)) {
+      sum <- sum - arr[i]# // sum is now right sum for index i
+      print(sum)
+      if (leftsum <= (sum+tol) & leftsum >= (sum-tol))
+        return( i)
+      
+      leftsum <- leftsum + arr[i]
+    }
+     # /* If no equilibrium index found, then return 0 */
+      return(-1)
+  }
+  
+  cols <- colSums(eVals)
+  ret <-equalibrium(arr=cols, tol=max(cols))
+  eVals[which(eVals[,ret]==3), ret]<-40
+
+  rows <- rowSums(eVals)
+  ret <- equalibrium(arr=rows, tol=max(rows))
+  eVals[ret, which(eVals[ret,]==3)]<-41
+
+  values(emptyR) <-as.vector(eVals)
+  
+  plot(emptyR)
+  freq(emptyR)
+  
   
   #0 for nonactive sites 
   #1 for active and not disturbed sites 
