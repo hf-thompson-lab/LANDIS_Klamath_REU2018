@@ -75,7 +75,7 @@ if (FALSE){
 # 
 #   freq(fuelRaster)
   # fuelVal in 1:12. 
-  
+# Section - prototype of the findfuelbreak function ==== 
   # connected components with images 
   library(raster)
   library(spatstat)
@@ -195,6 +195,7 @@ if (FALSE){
   plot(emptyR)
   freq(emptyR)
   
+  #end findfuelbreak prototype ====
   
   #0 for nonactive sites 
   #1 for active and not disturbed sites 
