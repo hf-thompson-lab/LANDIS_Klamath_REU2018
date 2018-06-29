@@ -64,10 +64,10 @@ RepeatHarvest?   Yes
 >>------------------------------------
 LandUse          "Fire Break"
 >>------------------------------------
-MapCode          12
+MapCode          150
 AllowHarvest?    no
 LandCoverChange  RemoveTrees
-RepeatHarvest?   Yes
+RepeatHarvest?   no
   		ABGRC 		1-500 (99%)
 	        ACMA3		1-350 (99%)
  		ALRU2		1-250 (99%)

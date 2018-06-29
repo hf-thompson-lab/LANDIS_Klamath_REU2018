@@ -8,7 +8,7 @@ equalibrium <- function(arr, tol) {
   
   for (i  in 1:(n-1)) {
     sum <- sum - arr[i]# // sum is now right sum for index i
-    print(sum)
+    #print(sum)
     if (leftsum <= (sum+tol) & leftsum >= (sum-tol))
       return( i)
     
@@ -86,34 +86,42 @@ findFuelBreaks <- function(fuelRaster, minCellsConnect, numFuelsToSplit){
   #??
   emptyR<-fuelRaster
   values(emptyR)[which(values(emptyR) >0)] <- -1 
+  values(emptyR)[which(values(emptyR) ==-1)] <- 0
   plot(emptyR)
-  
-  for (i in 1:(length(toDivide))){
-    
+  storage <- data.frame(colEq=numeric(numFuelsToSplit), rowEq=numeric(numFuelsToSplit), step=numeric(numFuelsToSplit))
+  #holder stores the cuts, holder1 stores the large connected components (where if there is a conflict on cell the larger are the ones overwrite) 
+  holder <- emptyR
+  holder2 <- emptyR
+  holder1 <- matrix(values(holder), c(310,312) ) 
+  for (i in 1:(numFuelsToSplit)){
+    emptyRTemp <-emptyR
+    print(i)
     toFind <- toDivide$value[i]
     
     cellsFound <- which(values(tR1) == toFind)
-    values(emptyR)[cellsFound] <- i #temp var... 
+    values(emptyRTemp)[cellsFound] <- i #temp var... 
+    values(holder2)[cellsFound] <- i 
     
-
-    values(emptyR)[which(values(emptyR) ==-1)] <- 0 
-    eVals <- matrix(values(emptyR), c(310,312) ) 
-
+    eVals <- matrix(values(emptyRTemp), c(310,312) ) 
+    
     #hist(colSums(eVals)) 
     
     #row and col are flipped (probably because of projection?)
     cols <- colSums(eVals)
     ret <-equalibrium(arr=cols, tol=max(cols))
-    eVals[which(eVals[,ret]==i), ret]<- i*10 
+    holder1[which(eVals[,ret]==i), ret]<- i*100 
     
     rows <- rowSums(eVals)
-    ret <- equalibrium(arr=rows, tol=max(rows))
-    eVals[ret, which(eVals[ret,]==i)]<- i*10 +1 
+    retr <- equalibrium(arr=rows, tol=max(rows))
+    holder1[retr, which(eVals[retr,]==i)]<- i*100 +1 
     
-    values(emptyR) <-as.vector(eVals)
+    storage[i,] <- data.frame(colEq=ret, rowEq=retr, step=i)# log this? 
   }
   
-  plot(emptyR)
-  freq(emptyR)
+  values(holder) <-as.vector(holder1)
+  values(holder)[which(values(holder) ==0)] <- NA
+  plot(holder)
+  freq(holder)
   
+  return(holder)
 }

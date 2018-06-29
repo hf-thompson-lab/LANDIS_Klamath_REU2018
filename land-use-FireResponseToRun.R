@@ -108,6 +108,7 @@ inSquareInactiveCells <- (setdiff(outOfBoundsCells, outOfSquareCells )) # insqua
 unforestedCells <- which(suR == 1) # un forested cells 
 wildernessCells <- which(values(luMaster)== 1111) # | values == 111 # both values are wilderness area cells (111 is only 4 cells though) 
 
+#TODO - check to see that this recent cuts things is working how it should ====
 #delete cuts that are older than 15 years 
 recentCuts <-  which(!(values(cutHistory) < timestep-14) & values(cutHistory)> 0) # cuts that happened recently and dont need to be cut again 
 
@@ -218,6 +219,16 @@ values(dR)[which(values(dR) == 581)] <-1 # set the open space to grow
 
 developedCells <- which(values(dR) >581 &values(dR) <1000 )# developed cells that werent hit by fire... 
 values(dR)[developedCells] <- 1 #set for forest to growth 
+
+
+# Section - get fuel break cuts ----
+source("FindFuelBreaks.R")
+fuelBreaks <- findFuelBreaks(fuelRaster, 20, 12)
+#values(fuelBreaks)[which(!is.na(values(fuelBreaks)) )] <- 150 # this line is probably not needed... 
+values(dR)[which(!is.na(values(fuelBreaks)))] <- 150
+#plot(dR)
+
+
 
 # Section - change navalue, exclude prohibited cuts, apply cut limit. 
 
