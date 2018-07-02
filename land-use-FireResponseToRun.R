@@ -81,7 +81,7 @@ if (timestep==1)# generate new cutHistory
 
 print("Rasters Read!")
 
-ONLYFIREBREAK <-T
+ONLYFIREBREAK <-F
 # end of setup. 
 
 
@@ -109,9 +109,9 @@ inSquareInactiveCells <- (setdiff(outOfBoundsCells, outOfSquareCells )) # insqua
 unforestedCells <- which(suR == 1) # un forested cells 
 wildernessCells <- which(values(luMaster)== 1111) # | values == 111 # both values are wilderness area cells (111 is only 4 cells though) 
 
-#TODO - check to see that this recent cuts things is working how it should ====
+
 #delete cuts that are older than 15 years 
-recentCuts <-  which(!(values(cutHistory) < timestep-14) & values(cutHistory)> 0) # cuts that happened recently and dont need to be cut again 
+recentCuts <-  which( !(values(cutHistory) < timestep-14) & values(cutHistory)> 0) # cuts that happened recently and dont need to be cut again 
 
 dontCuts <-unique( c( unforestedCells, wildernessCells, recentCuts)) #set to 1 [forest] later (in land use map) 
 DestroyCellsThatShouldBeNA <- outOfBoundsCells #set to 0 [NA] later (in land use map)
