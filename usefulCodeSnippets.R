@@ -89,7 +89,7 @@ ggplot(data =meltedCD, aes(x=decimalYear , y=value  , color=variable)) + geom_po
 # Section - Mean fire return interval (working) ----
 
 mask.active.cells <- raster('C:/Users/hfintern/Desktop/Klamath_ForestXSiskiyouCounty/clippedRaster/mask_activeCells.img')
-simus.selection <- c("PnET+Fire+Fuel+A2Climate+LU salavage 50Years")
+simus.selection <- c("PnET+Fire+Fuel+A2Climate 50Years")
 
 lapply (simus.selection, function (sim){
   general.root.path <- "C:/Users/hfintern/Desktop/Klamath_ForestXSiskiyouCounty/Saved Output"
@@ -111,6 +111,6 @@ lapply (simus.selection, function (sim){
   })
   extent(try1) <- extent (mask.active.cells)
   mfri <- try1 * mask.active.cells
-  writeRaster(mfri,paste0('C:/Users/hfintern/Desktop/MeanFireInterval.tif'),overwrite=T)
+  writeRaster(mfri,paste0('C:/Users/hfintern/Desktop/MeanFireInterval plain.tif'),overwrite=T)
 })
 

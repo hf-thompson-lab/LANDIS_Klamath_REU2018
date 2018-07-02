@@ -8,6 +8,7 @@
 # 21 -- steep development proximity cut
 # 30 -- fire salvage cut
 # 31 -- steep slope fire salvage cut
+# 150 -- clear cut for fuel break 
 
 # rules:  
 # 30 percent slope is the max for mechanical thinning - uplands
@@ -15,11 +16,15 @@
 
 # mechanical treatments would be used to prevent fire from entering land near developed area. 
 # cuts are assumed to last 15 years and after 15 years the area is eligible to cut again
-# 
 # cut limit per year is 4% of total active cells - this is then divided between FS and private cut limits 
-    # in a bad year the FS be able to cut an extra 50 to 200 cells
-# land around developed area will be cut if there is enough fire within 2.2 sqmi of the development (not sure on the size)
-# post fire salvage logging in areas that were not completely destroyed
+    # in a bad year the FS be able to cut an extra 50 to 200 cells #not implemented yet 
+
+# land around developed area will be cut if there is enough fire within 415.53ha circle of the development (not sure on the size)
+#                               (9X9 cell search for areas around development that >=40.35% [23/57] of the cells have fire on them) 
+
+# post fire salvage logging in areas that were not completely destroyed (I am unsure of the quantity of this cutting - might need to turn it down)
+
+# fuel breaks implemented to clear cut in order to divide large groups of connect fuel types. 
 
 # Section - start setup ----
 start_time <- Sys.time()
@@ -133,7 +138,7 @@ if (!ONLYFIREBREAK){
 #ideally we can order the severities here and then figure out where fire is closest to which developed area (or fire management area)
 
 cells <- which(values(developRaster) > 580) #581 is developed open space 582-584 are low to high intensity of development
-neighborhoodMatrix <- matrix(1, ncol=9, nrow = 9) # not sure on the sizing here 
+neighborhoodMatrix <- matrix(1, ncol=9, nrow = 9) # not sure on the sizing here 415.53ha circle 
 neighborhoodMatrix[5,5] <- 0
 
 # this gets rid of the boxy fire response cuts  
@@ -159,7 +164,7 @@ for (i in 1:length(cells)) # this could be sped up
 sumTable <- sumTable[order(-sumTable$mean),]
 
 #where 2 is the mean and median and 20/81 cells need fire as thresholds for cutting.  
-proximityToDevelopmentCells <- adjacent(developRaster, sumTable$cell[sumTable$mean>2 | sumTable$median>2 | sumTable$count > 20], directions=neighborhoodMatrix, pairs=F, target=NULL, sorted=T,  include=FALSE, id=T)
+proximityToDevelopmentCells <- adjacent(developRaster, sumTable$cell[sumTable$mean>2 | sumTable$median>2 | sumTable$count >= 23], directions=neighborhoodMatrix, pairs=F, target=NULL, sorted=T,  include=FALSE, id=T)
 print(paste(length(proximityToDevelopmentCells), "cells identified because of fire that is near developed cells"))
 
 linesLog <- c(linesLog, paste(length(proximityToDevelopmentCells), "cells identified because of fire that is near developed cells"))
@@ -193,7 +198,7 @@ values(dR)[subset(df, df$slopes <31)$cellNum] <- 1020
 values(dR)[subset(df, df$slopes >30)$cellNum] <- 1021 
 values(dR)[subset(df, df$slopes >60)$cellNum] <- 1
 
-#TODO - check to make sure that this <585 -> 0 and then 0 -> 1 doesnt matter and could just be changed to this 1 
+#TODO - check to make sure that this <585 -> 0 and then 0 -> 1 doesnt matter and could just be changed to this 1 ====
 # ie make sure that there are no 0's in the map before this next line of code. 
 values(dR)[which(values(dR) < 585)] <-0 # set the development areas to be cut??? 
 values(dR)[which(values(dR) == 1020)] <-20 
@@ -243,12 +248,12 @@ values(dR)[which(!is.na(values(fuelBreaks)))] <- 150
 prepostFireClearing <- sum(values(dR)==30, na.rm = T)+sum(values(dR)==31, na.rm = T)
 preproximityClearing <- sum(values(dR)==20, na.rm = T)+sum(values(dR)==21, na.rm = T)
 
-values(dR)[DestroyCellsThatShouldBeNA] <- 0  #DONE # get rid of prohibited cuts  
-values(dR)[dontCuts] <-1  #DONE # exclude cuts in cells that are unforested, wilderness areas, or that have been cut recently 
+values(dR)[DestroyCellsThatShouldBeNA] <- 0  # get rid of prohibited cuts  
+values(dR)[dontCuts] <-1 # exclude cuts in cells that are unforested, wilderness areas, or that have been cut recently 
 
 # apply cut limit to remaining cuts 
 cellsCut <- which(values(dR)>1)
-ownerDF <- data.frame(cell= cellsCut,owner= as.integer(values(luMaster)[cellsCut]/1000))
+ownerDF <- data.frame(cell= cellsCut,owner= as.integer(values(luMaster)[cellsCut]/1000)) #forest service owned land is over 1000. 
 FS <- subset(ownerDF, owner==1)$cell
 pri <- subset(ownerDF, owner==0)$cell
 
