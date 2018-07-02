@@ -81,8 +81,36 @@ head(endtab)
 meltedCD <- melt(endtab, id.vars =c("Year", "Month", "decimalYear", "EcoReg", "CO2", "PAR", "O3","Prec")) # "Tmax", "Tmin", "PAR", "Prec", "CO2"))
 
 
-
 head(meltedCD)
 
 ggplot(data =meltedCD, aes(x=decimalYear , y=value  , color=variable)) + geom_point()+ facet_wrap(~EcoReg ) + labs(title ="A2 Scenario")
+
+
+# Section - Mean fire return interval (working) ----
+
+mask.active.cells <- raster('C:/Users/hfintern/Desktop/Klamath_ForestXSiskiyouCounty/clippedRaster/mask_activeCells.img')
+simus.selection <- c("PnET+Fire+Fuel+A2Climate+LU salavage 50Years")
+
+lapply (simus.selection, function (sim){
+  general.root.path <- "C:/Users/hfintern/Desktop/Klamath_ForestXSiskiyouCounty/Saved Output"
+  
+  setwd(general.root.path)
+  setwd(sim)
+  
+  list.files(path = './fire')
+  ras.list <- paste0('fire/severity-',1:50,'.img') 
+  rastack  <- stack (ras.list)
+  
+  rastack <- reclassify(rastack,rcl = matrix (ncol = 3,byrow=T,data =c(-1,2.5,0,2.6,20,1)))
+  
+  try1 <- calc (rastack, fun= function (a){
+    m <- rle(a)
+    o <- mean(m$lengths [which (m$values==0)],na.rm=T)
+    if (is.nan(o)){o<-NA}
+    return(o)
+  })
+  extent(try1) <- extent (mask.active.cells)
+  mfri <- try1 * mask.active.cells
+  writeRaster(mfri,paste0('C:/Users/hfintern/Desktop/MeanFireInterval.tif'),overwrite=T)
+})
 

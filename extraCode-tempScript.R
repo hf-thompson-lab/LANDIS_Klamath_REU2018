@@ -20,6 +20,130 @@
 #values(dR)[which( values(slopeRaster)[adjacent(dR, cells, directions=16, pairs=F, target=NULL, sorted=T,  include=FALSE, id=FALSE)] < 30 )] <- 1021
 
 
+
+
+# Section -- plotting fire stats 
+
+library(ggplot2)
+library(reshape2)
+library(gridExtra)
+
+setwd("C:/Users/hfintern/Desktop/")
+
+setwd("Klamath_ForestXSiskiyouCounty/Saved Output/PnET+Fire+Fuel+A2Climate 50Years") # scenerio folder 
+
+
+generateSimpleCI <- function(plot, avg, stddev, linetype, mColor, sdColor ,size) {
+  ci <- plot + geom_hline(yintercept = avg, linetype=linetype, color = mColor, size=size)
+  ci <- ci + geom_hline(yintercept = (avg+ 2*stddev), linetype=linetype, color = sdColor, size=size)
+  ci <- ci + geom_hline(yintercept = (avg- 2*stddev), linetype=linetype, color = sdColor, size=size)
+  return(ci) 
+}
+
+constrainPlot <- function(plot, xlim= c(0,50), ylim)
+{
+  cp <- plot + scale_x_continuous(limits = xlim) + scale_y_continuous(limits= ylim)
+  return(cp)
+}
+
+
+#AGB log 
+
+agbPath<- "output/agbiomass/AGBiomass_.txt"
+agb<- read.table(agbPath, header=T)
+head(agb)
+meltagb <- melt(agb, id = "Time") 
+head(meltagb)
+p1<- ggplot(meltagb , aes(x= Time, y= value, color=variable)) +geom_point() + labs(title="Change in AGB over time", y="AGB in g/m2") + theme_classic() #theme_linedraw()
+
+agbgrowthdiffs <- agb
+meangrowth <- numeric(51)
+for (i in 2:51)
+{
+  agbgrowthdiffs[i,2:length(agb)] <- agbgrowthdiffs[i,2:length(agb)] -agb[i-1,2:length(agb)]
+  meangrowth[i] <- sum(agbgrowthdiffs[i,2:6]) /5
+}
+agbgrowthdiffs[1, 2:length(agb)] <- 0
+head(agbgrowthdiffs)
+meltgrowthperyear <- melt(agbgrowthdiffs, id = "Time") 
+p1.5 <- ggplot(meltgrowthperyear , aes(x= Time, y= value, color=variable)) +geom_point() + labs(title="AGB growth per year", y="AGB in g/m2") + theme_classic() #theme_linedraw()
+p1.5 <- p1.5 + geom_hline(yintercept=0)
+
+meanVal <- mean(meangrowth ,na.rm=T)
+sdVal <- sd(meangrowth, na.rm=T)
+p1.5<- generateSimpleCI(plot=p1.5, avg= meanVal, stddev=sdVal, linetype="dashed", mColor="black", sdColor= "grey", size= 1.5)
+p1.5 <- constrainPlot(p1.5, ylim = c(-75,100))
+
+p1.5
+
+tail(agbgrowthdiffs)
+grid.arrange(p1,p1.5)
+
+
+#fire summary log 
+
+fireSumPath <- "dynamic-fire-summary-log.csv"
+dfs <- read.csv(fireSumPath, header = T, stringsAsFactors = F)
+head(dfs)
+
+#dfs <- dfs[dfs$FireRegion != " fire3",]  # with out stringsAsFactors=F dfs$FireRegion == levels(dfs$FireRegion)[3]
+dfs$TotalBurnedSites[dfs$FireRegion == " fire3"] <- dfs$TotalBurnedSites[dfs$FireRegion == " fire1"] +   dfs$TotalBurnedSites[dfs$FireRegion == " fire2"]   
+dfs$NumberFires[dfs$FireRegion == " fire3"] <- dfs$NumberFires[dfs$FireRegion == " fire1"] +   dfs$NumberFires[dfs$FireRegion == " fire2"]   
+
+
+meltdfs <- melt(dfs, id= c("Time","TotalBurnedSites","NumberFires"))
+head(meltdfs)
+
+# this and below are changed .......
+meltdfs2<- meltdfs[complete.cases(meltdfs),]
+
+p22 <- ggplot(meltdfs2, aes(x=Time , y =TotalBurnedSites*7.29, color = value)) + geom_smooth() +theme_classic()+labs(title="Burned Area per year (no fuelbreaks)") + scale_y_continuous(limits= c(0,8000))
+
+
+p32 <- ggplot(meltdfs2, aes(x=Time , y =NumberFires, color = value)) + geom_smooth() +theme_classic() +labs(title="Number Fires per year (no fuelbreaks)")+ scale_y_continuous(limits= c(0,8.5))
+
+
+
+
+#fire events log 
+
+fireEventPath <- "dynamic-fire-events-log.csv"
+dfe <- read.csv(fireEventPath, header=T)
+ms <- numeric(50)
+meds <- numeric(50) 
+mck <- numeric(50)
+medck<- numeric(50)
+for (i in 1:50)
+{
+  ms[i] <- mean(dfe[dfe$Time==i,]$MeanSeverity)
+  meds[i] <- median(dfe[dfe$Time==i,]$MeanSeverity) 
+  mck[i] <- mean(dfe[dfe$Time==i,]$CohortsKilled)
+  medck[i] <- median(dfe[dfe$Time==i,]$CohortsKilled)
+}
+df <-data.frame(Time = 1:50, MeanSeverity=ms, MedianSeverity=meds)
+meltdf<- melt(df, id="Time")
+p4<- ggplot(meltdf, aes(x=Time, y=value, color= variable)) + geom_point() + theme_classic() +  labs(title="Fire Severity per year")
+
+meanVal <- mean(ms ,na.rm=T)
+sdVal <- sd(ms, na.rm=T)
+p4<- generateSimpleCI(plot=p4, avg= meanVal, stddev=sdVal, linetype="dashed", mColor="black", sdColor= "grey", size= 1.5)
+p4 <- constrainPlot(p4, ylim = c(0,6))
+
+
+dfck <-data.frame(Time = 1:50, MeanCohortsKilled=mck, MedianCohortsKilled=medck)
+meltdfck<- melt(dfck, id="Time")
+p5<- ggplot(meltdfck, aes(x=Time, y=value, color= variable)) + geom_point() + theme_classic() +  labs(title="Cohorts Killed per year")
+meanVal <- mean(mck ,na.rm=T)
+sdVal <- sd(mck, na.rm=T)
+p5<- generateSimpleCI(plot=p5, avg= meanVal, stddev=sdVal, linetype="dashed", mColor="black", sdColor= "grey", size= 1.5)
+p5 <- constrainPlot(p5, ylim = c(0,3000))
+
+
+
+grid.arrange(p1,p1.5,p2,p3,p4,p5, ncol=1)
+grid.arrange(p1.5,p2,p3,p4,p5, ncol=1)
+
+
 # Section Extra code (not run) ----
 if (FALSE){
   
