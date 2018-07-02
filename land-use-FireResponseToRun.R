@@ -86,24 +86,21 @@ if (timestep==1)# generate new cutHistory
 
 print("Rasters Read!")
 
-ONLYFIREBREAK <-F
+ONLYFIREBREAK <-F # if TRUE it skips over the proximity to development and salvage cutting. 
 # end of setup. 
 
 
 # Section - cut limits and determining inactive cells and prohibited cells from cut history ---- 
 
 # set up limits for cutting on private and forest service
-#total cells active cells -- 300*312 - length(inSquareInactiveCells) - length(outOfSquareCells) = 54271
+#total cells active cells -- 300*312 - length(inSquareInactiveCells) - length(outOfSquareCells) = 54271  # this might be wrong it might be  57391
 # 54271*.05 = 2714 
 maxPercentCut <- .04 #max percent of cells that will be cut each year 
 maxCutCells<- 54271 * maxPercentCut 
 fsLimit<- floor(maxCutCells * 0.6766776) #(30414+12080)/(14464+5836+4 +30414+12080) #these numbers come from freq(luMaster)
 privateLimit <- floor(maxCutCells* 0.3233224) # (14464+5836+4)/(14464+5836+4 +30414+12080)
 
-
-
 # we can grab the unforested areas from the fuels and delete them later
-
 #unforested areas are 1 , out of bounds areas are 0 
 setupRaster <- fuelRaster
 suR <- values(setupRaster)
@@ -121,18 +118,15 @@ recentCuts <-  which( !(values(cutHistory) < timestep-14) & values(cutHistory)> 
 dontCuts <-unique( c( unforestedCells, wildernessCells, recentCuts)) #set to 1 [forest] later (in land use map) 
 DestroyCellsThatShouldBeNA <- outOfBoundsCells #set to 0 [NA] later (in land use map)
 
-#length(recentCuts)#length(outOfBoundsCells)#length(wildernessCells)#length(unforestedCells) # amount of unforested cell should be the only thing that could change depending on fires/cutting
 linesLog <- c(linesLog, paste("OoB #:", length(outOfBoundsCells)), paste("WA #:", length(wildernessCells)),paste("UF #:", length(unforestedCells)))
 
 
 if (!ONLYFIREBREAK){
-# Section - identifying cells with fire that is within a square of 9 cells (2.279 mi^2 or 590.49 ha) from developed areas ----
+# Section - identifying cells with fire that is within a ciclre of 9 cells (415.53 ha) from developed areas ----
 
 # metadata for developRaster if you want it #developed areas # 580 -584 
 #attrTablePath <- "clippedRaster/land-use/GAP_LANDFIRE_National_Terrestrial_Ecosystems_2011_Attributes.csv"
-#attrTable <- read.table(attrTablePath, header = T, sep=",")
-#clippedTable <- attrTable[which(attrTable$Value %in% vals),]
-#clippedTable[c(1,19)]
+#attrTable <- read.table(attrTablePath, header = T, sep=",");clippedTable <- attrTable[which(attrTable$Value %in% vals),];clippedTable[c(1,19)]
 
 # get severity of fire with in proximity to development 
 #ideally we can order the severities here and then figure out where fire is closest to which developed area (or fire management area)
@@ -163,29 +157,20 @@ for (i in 1:length(cells)) # this could be sped up
 }
 sumTable <- sumTable[order(-sumTable$mean),]
 
-#where 2 is the mean and median and 20/81 cells need fire as thresholds for cutting.  
+#where 2 is the mean and median and 23/57 cells need fire as thresholds for cutting.  
 proximityToDevelopmentCells <- adjacent(developRaster, sumTable$cell[sumTable$mean>2 | sumTable$median>2 | sumTable$count >= 23], directions=neighborhoodMatrix, pairs=F, target=NULL, sorted=T,  include=FALSE, id=T)
 print(paste(length(proximityToDevelopmentCells), "cells identified because of fire that is near developed cells"))
 
 linesLog <- c(linesLog, paste(length(proximityToDevelopmentCells), "cells identified because of fire that is near developed cells"))
 
 
-
 #Section - cutting in areas surrounding development ----
 dR <- developRaster
-values(dR)[which(values(developRaster) < 580)] <- 1
+values(dR)[which(values(developRaster) < 580)] <- 1  #we only care about the space labeled as developed which is 580-584
 
 neighM <- matrix(1, ncol=3, nrow = 3) # clear within a quarter of a mile of important structures -- from SISKIYOU COUNTY WILDFIRE PROTECTION PLAN APRIL 23, 2008
 neighM[2,2] <- 0
-
-#(dR)[which(values(developRaster) > 581)]
-# cells that have development values 
-# cells <- which(values(developRaster) > 581) ## changed for proximity checking 
-
 cells <- proximityToDevelopmentCells
-
-#cells that are surronding the developed zones (cut more around medium and high and less around low and open)
-#values(dR)[adjacent(dR, cells, directions=16, pairs=F, target=NULL, sorted=T,  include=FALSE, id=FALSE)] #<- 589
 
 #take into account slope. 
 rm(adj)
@@ -193,18 +178,10 @@ adj<- adjacent(dR, cells, directions=neighM, pairs=F, target=NULL, sorted=T,  in
 df <- data.frame(cellNum=adj, slopes=values(slopeRaster)[adj]) 
 df <- rbind(df,data.frame(cellNum=cells, slopes=values(slopeRaster)[cells]))
 
-#TODO - get rid of the extra assignment steps ==== 
-values(dR)[subset(df, df$slopes <31)$cellNum] <- 1020
-values(dR)[subset(df, df$slopes >30)$cellNum] <- 1021 
-values(dR)[subset(df, df$slopes >60)$cellNum] <- 1
-
-#TODO - check to make sure that this <585 -> 0 and then 0 -> 1 doesnt matter and could just be changed to this 1 ====
-# ie make sure that there are no 0's in the map before this next line of code. 
-values(dR)[which(values(dR) < 585)] <-0 # set the development areas to be cut??? 
-values(dR)[which(values(dR) == 1020)] <-20 
-values(dR)[which(values(dR) == 1021)] <-21 
-values(dR)[which(values(dR) == 0)] <-1
-
+values(dR)[which(values(dR) < 585)] <- 1 # set the development areas to be forest growth
+values(dR)[subset(df, df$slopes <31)$cellNum] <- 20 # regular cuts 
+values(dR)[subset(df, df$slopes >30)$cellNum] <- 21 # steep cuts 
+values(dR)[subset(df, df$slopes >60)$cellNum] <- 1  # if slope is too steep dont cut
 
 
 # Section - Salavage logging - clear cutting (and planting?) burnt forests ----
@@ -215,12 +192,9 @@ cells <- which(values(severityRaster) > 2 & values(severityRaster)<6)
 rm(df)
 df <- data.frame(cellNum=adjacent(dR, cells, directions=8, pairs=F, target=NULL, sorted=T,  include=FALSE, id=T), slopes=values(slopeRaster)[adjacent(dR, cells, directions=8, pairs=F, target=NULL, sorted=T,  include=FALSE, id=T)]) 
 df <- rbind(df,data.frame(cellNum=cells, slopes=values(slopeRaster)[cells]))
-values(dR)[subset(df, df$slopes <31)$cellNum] <- 2030
-values(dR)[subset(df, df$slopes >30)$cellNum] <- 2031
-values(dR)[subset(df, df$slopes >60)$cellNum] <- 1
-
-values(dR)[which(values(dR) == 2030)] <-30 
-values(dR)[which(values(dR) == 2031)] <-31 
+values(dR)[subset(df, df$slopes <31)$cellNum] <- 30 #regular cuts
+values(dR)[subset(df, df$slopes >30)$cellNum] <- 31 #step cuts 
+values(dR)[subset(df, df$slopes >60)$cellNum] <- 1    #too steep to cut 
 values(dR)[which(values(dR) == 581)] <-1 # set the open space to grow 
 
 developedCells <- which(values(dR) >581 &values(dR) <1000 )# developed cells that werent hit by fire... 
@@ -257,6 +231,7 @@ ownerDF <- data.frame(cell= cellsCut,owner= as.integer(values(luMaster)[cellsCut
 FS <- subset(ownerDF, owner==1)$cell
 pri <- subset(ownerDF, owner==0)$cell
 
+#if over either of the limits then random sample to delete proposed cuts. 
 if(length(pri) > privateLimit)
 {
   numToRemove<- length(pri) - privateLimit
@@ -278,7 +253,7 @@ if(length(FS) > fsLimit)
 # Section - output extra logs, output plots, write land-use raster ---- 
 #stores cut history 
 values(cutHistory)[cellsCut] <- timestep
-values(severityHistory)[which(values(severityRaster)>2)] <- timestep
+values(severityHistory)[which(values(severityRaster)>2)] <- timestep  #might want to only record higher severity fires 
 
 CellsWithFire =sum(values(severityHistory) ==timestep, na.rm = T)
 
@@ -296,6 +271,7 @@ linesLog <- c(linesLog, paste0("percent cut (total cells -OoB-UF-WA): ", round(c
 
 postFireClearing <- sum(values(dR)==30, na.rm = T)+sum(values(dR)==31, na.rm = T)
 proximityClearing <- sum(values(dR)==20, na.rm = T)+sum(values(dR)==21, na.rm = T)
+# TODO - fix logging data -- this isnt very good right now. ====
 timestepData <- data.frame(TimeStep= timestep, CellsCut = cutsMade,FSCuts=length(FS), PrivateCuts=length(pri) , CutsNearDevelopment = proximityClearing , CutsForPostFireSalvage = postFireClearing, rejectedProximityCuts= preproximityClearing- proximityClearing, rejectedSalvageCuts= prepostFireClearing- postFireClearing, CellsWithFire=CellsWithFire )
 
 print(freq(dR))

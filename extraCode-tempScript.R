@@ -22,7 +22,7 @@
 
 
 
-# Section -- plotting fire stats 
+# Section -- plotting fire stats ----
 
 library(ggplot2)
 library(reshape2)
@@ -40,8 +40,7 @@ generateSimpleCI <- function(plot, avg, stddev, linetype, mColor, sdColor ,size)
   return(ci) 
 }
 
-constrainPlot <- function(plot, xlim= c(0,50), ylim)
-{
+constrainPlot <- function(plot, xlim= c(0,50), ylim) {
   cp <- plot + scale_x_continuous(limits = xlim) + scale_y_continuous(limits= ylim)
   return(cp)
 }
