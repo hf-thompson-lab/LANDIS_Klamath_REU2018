@@ -89,7 +89,7 @@ ggplot(data =meltedCD, aes(x=decimalYear , y=value  , color=variable)) + geom_po
 # Section - Mean fire return interval (working) ----
 
 mask.active.cells <- raster('C:/Users/hfintern/Desktop/Klamath_ForestXSiskiyouCounty/clippedRaster/mask_activeCells.img')
-simus.selection <- c("PnET+Fire+Fuel+A2Climate 50Years")
+simus.selection <- c("7-2-18 PnET+FIRE+FUEL 50 a2 scenario") # 7-2-18 PnET+FIRE+FUEL+DevCUT+FBreak 50 a2 scenario
 
 lapply (simus.selection, function (sim){
   general.root.path <- "C:/Users/hfintern/Desktop/Klamath_ForestXSiskiyouCounty/Saved Output"
@@ -111,6 +111,124 @@ lapply (simus.selection, function (sim){
   })
   extent(try1) <- extent (mask.active.cells)
   mfri <- try1 * mask.active.cells
-  writeRaster(mfri,paste0('C:/Users/hfintern/Desktop/MeanFireInterval plain.tif'),overwrite=T)
+  writeRaster(mfri,paste0('C:/Users/hfintern/Desktop/MeanFireInterval 7-2 no response.img'),overwrite=T,format="HFA", datatype="INT2S", NAvalue=0 )
 })
+
+
+
+# Section - AGB over time ---- 
+
+
+simus.selection <- c("7-2-18 PnET+FIRE+FUEL 50 a2 scenario", "7-2-18 PnET+FIRE+FUEL+DevCUT+FBreak 50 a2 scenario")
+
+
+
+constrainPlot <- function(plot, xlim= c(0,50), ylim){
+  cp <- plot + scale_x_continuous(limits = xlim) + scale_y_continuous(limits= ylim)
+  return(cp)
+}
+
+
+
+graphs <- list()
+graphs <- lapply (simus.selection, function (sim){
+  general.root.path <- "C:/Users/hfintern/Desktop/Klamath_ForestXSiskiyouCounty/Saved Output"
+  
+  setwd(general.root.path)
+  setwd(sim)
+  
+  agbPath<- "output/agbiomass/AGBiomass_.txt"
+  agb<- read.table(agbPath, header=T)
+
+  meltagb <- melt(agb, id = "Time") 
+  
+  p1<- ggplot(meltagb , aes(x= Time, y= value, color=variable)) +geom_smooth() + labs(title="Change in AGB over time ", subtitle= sim, y="AGB in g/m2") + theme_linedraw()
+  p1 <- constrainPlot(p1, ylim = c(0,5000))
+  return(p1)
+})
+
+
+g1<- grid.arrange(graphs[[1]], graphs[[2]])
+
+
+graphs1 <- list()
+graphs1 <- lapply (simus.selection, function (sim){
+  general.root.path <- "C:/Users/hfintern/Desktop/Klamath_ForestXSiskiyouCounty/Saved Output"
+  
+  setwd(general.root.path)
+  setwd(sim)
+  
+  agbPath<- "output/agbiomass/AGBiomass_.txt"
+  agb<- read.table(agbPath, header=T)
+  
+ 
+  agbgrowthdiffs <- agb
+  meangrowth <- numeric(51)
+  for (i in 2:51)
+  {
+    agbgrowthdiffs[i,2:length(agb)] <- agbgrowthdiffs[i,2:length(agb)] -agb[i-1,2:length(agb)]
+    meangrowth[i] <- sum(agbgrowthdiffs[i,2:6]) /5
+  }
+  agbgrowthdiffs[1, 2:length(agb)] <- 0
+  head(agbgrowthdiffs)
+  meltgrowthperyear <- melt(agbgrowthdiffs, id = "Time") 
+  p1.5 <- ggplot(meltgrowthperyear , aes(x= Time, y= value, color=variable)) +geom_smooth() + labs(title="AGB growth per year", y="AGB in g/m2", subtitle= sim) + theme_linedraw()
+  p1.5 <- p1.5 + geom_hline(yintercept=0, linetype="dashed", color = "red" , size=2)
+  p1.5 <- constrainPlot(p1.5, ylim = c(-50,75))
+  
+  return(p1.5)
+})
+
+g2<- grid.arrange(graphs1[[1]], graphs1[[2]])
+
+
+# Section - fire stats over time ---- 
+
+dataFrames <- lapply (simus.selection, function (sim){
+  general.root.path <- "C:/Users/hfintern/Desktop/Klamath_ForestXSiskiyouCounty/Saved Output"
+  
+  setwd(general.root.path)
+  setwd(sim)
+  
+  fireEventPath <- "dynamic-fire-events-log.csv"
+  dfe <- read.csv(fireEventPath, header=T)
+  
+  ms <- numeric(50)
+  meds <- numeric(50)
+  mck <- numeric(50)
+  medck<- numeric(50)
+  size <- numeric(50)
+  for (i in 1:50)
+  {
+    ms[i] <- mean(dfe[dfe$Time==i,]$MeanSeverity)
+    meds[i] <- median(dfe[dfe$Time==i,]$MeanSeverity)
+    mck[i] <- sum(dfe[dfe$Time==i,]$CohortsKilled)
+    medck[i] <- sum(dfe[dfe$Time==i,]$TotalSites)
+    size[i] <- max(dfe[dfe$Time==i,]$SizeBin)
+
+  }
+
+  df <-data.frame(Time = 1:50, MeanSeverity=ms, MedianSeverity=meds,CohortsKilled=mck, TotalSites=medck, Size= size,  SIM=rep(sim, 50))
+  return(df)
+})
+
+completedf<- do.call( rbind, dataFrames)
+
+meltdf <- melt(completedf, id=c("Time", "MedianSeverity", "CohortsKilled", "TotalSites", "MeanSeverity", "Size" ))
+
+p4<- ggplot(meltdf, aes(x=Time, y=MeanSeverity, color= value)) + geom_smooth() +geom_point() + theme_linedraw() +  labs(title="MeanSeverity");p4
+
+p5<- ggplot(meltdf, aes(x=Time, y=CohortsKilled, color= value)) + geom_smooth() + theme_linedraw()+  labs(title="CohortsKilled");p5
+
+
+
+p6<- ggplot(meltdf, aes(x=Time, y=TotalSites, color= value))+geom_point() + geom_smooth() + theme_linedraw()+  labs(title="TotalSites");p6
+
+meltdf$Size[meltdf$Size=="-Inf"]<-0 
+p7<- ggplot(meltdf, aes(x=Time, y=Size, color= value))+geom_point() + geom_smooth() + theme_linedraw()+  labs(title="Max fire Size");p7
+
+
+p = ggplot(meltdf, aes(x=Size)) + theme_classic()+
+  geom_histogram(position="identity", colour="grey40", alpha=0.2, bins = 6) +  labs(title="Max recorded fire size over all years")+
+  facet_grid(. ~ value );p
 
