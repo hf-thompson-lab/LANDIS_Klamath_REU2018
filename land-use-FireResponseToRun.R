@@ -8,7 +8,8 @@
 # 21 -- steep development proximity cut
 # 30 -- fire salvage cut
 # 31 -- steep slope fire salvage cut
-# 150 -- clear cut for fuel break 
+# 155 -- clear cut for fuel break on private land
+# 156 -- clear cut for fuel break on FS land 
 
 # rules:  
 # 30 percent slope is the max for mechanical thinning - uplands
@@ -87,6 +88,7 @@ if (timestep==1)# generate new cutHistory
 print("Rasters Read!")
 
 ONLYFIREBREAK <-F # if TRUE it skips over the proximity to development and salvage cutting. 
+PERMANENTFSFIREBREAKS <- F # if TRUE this forces FS land to use the same  fire break cuts
 # end of setup. 
 
 
@@ -201,22 +203,32 @@ developedCells <- which(values(dR) >581 &values(dR) <1000 )# developed cells tha
 values(dR)[developedCells] <- 1 #set for forest to growth 
 
 
-# Section - get fuel break cuts ----
+# Section - get fuel break cuts ---- 
 source("FindFuelBreaks.R")
-fuelBreaks <- findFuelBreaks(fuelRaster, 35, 20)
-#values(fuelBreaks)[which(!is.na(values(fuelBreaks)) )] <- 150 # this line is probably not needed... 
-values(dR)[which(!is.na(values(fuelBreaks)))] <- 150
+fuelBreaks <- findFuelBreaks(fuelRaster, fuelValsToConsider= (c(1:6,10,11)+1), minCellsConnect=35, numFuelsToSplit=8, numOfLargestFuelsToPickFrom=15)
+
+#try to keep the FS cutting the same fire breaks 
+
+
+# if there is a fuel break in FS land then get rid of it. 
+# read in this historic fuel breaks and cut it (the recent cuts destoryer should take care of the currency problem)
+
+
+#let private owners cut whatever they want so they can keep 
+
+
+values(dR)[which(!is.na(values(fuelBreaks)))] <- 155
 #plot(dR)
 }else{#ONLYFIREBREAKS 
   source("FindFuelBreaks.R")
-  fuelBreaks <- findFuelBreaks(fuelRaster, 35, 20)
-  values(fuelBreaks)[which(!is.na(values(fuelBreaks)) )] <- 150 # this line is probably not needed... 
+  fuelBreaks <- findFuelBreaks(fuelRaster, fuelValsToConsider= (c(1:6,10,11)+1), minCellsConnect=35, numFuelsToSplit=8, numOfLargestFuelsToPickFrom=15)
+  values(fuelBreaks)[which(!is.na(values(fuelBreaks)) )] <- 155 
   values(fuelBreaks)[which(is.na(values(fuelBreaks)) )]<-0
   dR <- fuelBreaks
 }
 
 
-# Section - change navalue, exclude prohibited cuts, apply cut limit. 
+# Section - change navalue, exclude prohibited cuts, 
 
 #curious about how many cuts were proposed in inactive and prohibited sites 
 prepostFireClearing <- sum(values(dR)==30, na.rm = T)+sum(values(dR)==31, na.rm = T)
@@ -225,12 +237,44 @@ preproximityClearing <- sum(values(dR)==20, na.rm = T)+sum(values(dR)==21, na.rm
 values(dR)[DestroyCellsThatShouldBeNA] <- 0  # get rid of prohibited cuts  
 values(dR)[dontCuts] <-1 # exclude cuts in cells that are unforested, wilderness areas, or that have been cut recently 
 
-# apply cut limit to remaining cuts 
+# get ownership data for permenant fire breaks and applying cut limit to remaining cuts 
 cellsCut <- which(values(dR)>1)
 ownerDF <- data.frame(cell= cellsCut,owner= as.integer(values(luMaster)[cellsCut]/1000)) #forest service owned land is over 1000. 
 FS <- subset(ownerDF, owner==1)$cell
 pri <- subset(ownerDF, owner==0)$cell
 
+#change FS fuel break cutting code 
+values(dR)[intersect(which(values(dR)==155), FS)] <- 156 
+
+#TODO- Section - clear fire breaks on federal land and put in the permanant ones. 
+if (PERMANENTFSFIREBREAKS)
+{
+  values(dR)[which(values(dR) == 156)] <- 1 # Clear fire breaks (set to forest growth)
+  
+  if (timestep == 1){ # store the cuts on the first time step
+  #this would be used to store the cuts (that would be in FS)
+  cat(paste(FS), file="land-use-maps/permanentFSCuts.txt", sep=", ", append=T) # file =""
+  cat("", file="land-use-maps/permanentFSCuts.txt", sep="\n", append=T) # file =""
+  }
+  
+   
+  if (timestep %% 15 == 1){ # FS only cuts every 15 years 
+
+    #read in the permanent cuts 
+    rawdat <- readLines("land-use-maps/permanentFSCuts.txt")
+    permanentCutCells <- as.numeric(unlist(strsplit(rawdat, ", ")))
+    
+    
+  
+    values(dR)[permanentCutCells] <- 156 # cut the permanent cuts
+  
+    # Finally make sure that none of the added cuts were on the wilderness area 
+    values(dR)[wildernessCells] <-1  # this is probably extraneous depending on the permanent FS cuts are determined
+  }
+}
+
+
+# Section - Apply cut limit. 
 #if over either of the limits then random sample to delete proposed cuts. 
 if(length(pri) > privateLimit)
 {
@@ -249,6 +293,8 @@ if(length(FS) > fsLimit)
   print(paste("Reached Forest Service cut limit. Removing",numToRemove,"proposed cuts."))
   linesLog <- c(linesLog, paste("Reached Forest Service cut limit. Removing",numToRemove,"proposed cuts."))
 }
+
+
 
 # Section - output extra logs, output plots, write land-use raster ---- 
 #stores cut history 

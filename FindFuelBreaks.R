@@ -20,17 +20,19 @@ equalibrium <- function(arr, tol) {
 
 # find connected components of fuelTypes that can be spilt into 4's  
 # @param fuelRaster      - is the fuelType raster from Dyanmic Fire and Fuels Landis-II extension 
+# @param fuelValsToConsider - index of fuelVal +1 that you want to cut breaks for
 # @param minCellsConnect - is the smallest cells connected you want to search for
 # @param numFuelsToSplit - is the number of the largest connected components that you want to split in 4's 
-findFuelBreaks <- function(fuelRaster, minCellsConnect, numFuelsToSplit){
+# @param numOfLargestFuelsToPickFrom - is the number of the largest connected components that you want to split in 4's that you want to randomly sample from to split
+findFuelBreaks <- function(fuelRaster, fuelValsToConsider= (c(1:6,10,11)+1), minCellsConnect , numFuelsToSplit, numOfLargestFuelsToPickFrom){
   require(raster)
   require(spatstat)
   
   tR1<-fuelRaster
   values(tR1)[which(values(tR1) >0)] <- -1 
   
-  # take the fuels that are connected to 20 or more for each fuel type and tag them with a unique label... 
-  for (fuelVal in 1:12){
+  # take the fuels that are connected to minCellsConnect or more for each fuel type and tag them with a unique label... 
+  for (fuelVal in fuelValsToConsider){
     
     tR <- fuelRaster
     print(fuelVal)
@@ -50,7 +52,7 @@ findFuelBreaks <- function(fuelRaster, minCellsConnect, numFuelsToSplit){
     
     # get the largest occuring connected components that are with minCellsConnect and 12000
     fq <-as.data.frame( freq(tR)) 
-    nfq<-na.omit(subset(fq,(fq$count>minCellsConnect & fq$count<12000)))
+    nfq<-na.omit(subset(fq,(fq$count>minCellsConnect & fq$count< (300*312)/5)  )) # if connect components are too large then the fuel breaks would be too long
     nfq<- nfq[order(-nfq$count),]
     if (length(nfq$value) == 0) {print("empty nfq - no connected components"); next()}
     nfq<- cbind(nfq, rank=length(nfq$value):1 )
@@ -74,8 +76,14 @@ findFuelBreaks <- function(fuelRaster, minCellsConnect, numFuelsToSplit){
   # get the largest connected components that we want to split up with fuel breaks 
   newfq <- data.frame(freq(tR1))
   newerfq<- na.omit(newfq[order(-newfq$count),])
-  toDivide <- head(newerfq, n=numFuelsToSplit)
   
+  if (length(newerfq$value) < numOfLargestFuelsToPickFrom) {numOfLargestFuelsToPickFrom <- length(newerfq$value)}
+  if (length(newerfq$value) < numFuelsToSplit) {numFuelsToSplit <- length(newerfq$value)}
+  toDivide <- head(newerfq, n=numOfLargestFuelsToPickFrom)
+  print(toDivide)
+  print(paste("sampling ", numFuelsToSplit," from this list"))
+  toDivide <- toDivide[sample(1:numOfLargestFuelsToPickFrom, numFuelsToSplit),]  # randomized the fuel beaks that we avoid cutting the same thing over and over
+
   # set up for the spliting (changing NA values and outOfBounds values)
   emptyR<-fuelRaster
   values(emptyR)[which(values(emptyR) >0)] <- -1 
