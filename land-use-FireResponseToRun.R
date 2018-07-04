@@ -249,25 +249,24 @@ values(dR)[intersect(which(values(dR)==155), FS)] <- 156
 #TODO- Section - clear fire breaks on federal land and put in the permanant ones. 
 if (PERMANENTFSFIREBREAKS)
 {
-  values(dR)[which(values(dR) == 156)] <- 1 # Clear fire breaks (set to forest growth)
-  
-  if (timestep == 1){ # store the cuts on the first time step
-  #this would be used to store the cuts (that would be in FS)
-  cat(paste(FS), file="land-use-maps/permanentFSCuts.txt", sep=", ", append=T) # file =""
-  cat("", file="land-use-maps/permanentFSCuts.txt", sep="\n", append=T) # file =""
+  if (timestep == 1 || sample(1:100, 1) == timestep){ # store the cuts on the first time step or if there was a stange incident (1% chance). 
+    permanentFuelBeaks <- which(values(dR) == 156)
+    
+    #this would be used to store the cuts (that would be in FS)
+    cat(permanentFuelBeaks, file="land-use-maps/permanentFSCuts.txt", sep=", ", append=T) # file =""
+    cat("", file="land-use-maps/permanentFSCuts.txt", sep="\n", append=T) # file =""
   }
   
-   
+  values(dR)[which(values(dR) == 156)] <- 1 # Clear fire breaks (set to forest growth)
+  
   if (timestep %% 15 == 1){ # FS only cuts every 15 years 
-
+    
     #read in the permanent cuts 
     rawdat <- readLines("land-use-maps/permanentFSCuts.txt")
     permanentCutCells <- as.numeric(unlist(strsplit(rawdat, ", ")))
     
-    
-  
     values(dR)[permanentCutCells] <- 156 # cut the permanent cuts
-  
+    
     # Finally make sure that none of the added cuts were on the wilderness area 
     values(dR)[wildernessCells] <-1  # this is probably extraneous depending on the permanent FS cuts are determined
   }

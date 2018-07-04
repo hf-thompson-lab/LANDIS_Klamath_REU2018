@@ -62,9 +62,9 @@ RepeatHarvest?   Yes
 
 
 >>------------------------------------
-LandUse          "Fire Break"
+LandUse          "Fire Break for private"
 >>------------------------------------
-MapCode          150
+MapCode          155
 AllowHarvest?    no
 LandCoverChange  RemoveTrees
 RepeatHarvest?   no
@@ -74,6 +74,18 @@ RepeatHarvest?   no
 		PIMO3		1-600 (99%)
 		PSME      	1-650 (99%)
 
+>>------------------------------------
+LandUse          "Fire Break for FS"
+>>------------------------------------
+MapCode          156
+AllowHarvest?    no
+LandCoverChange  RemoveTrees
+RepeatHarvest?   no
+  		ABGRC 		1-500 (99%)
+	        ACMA3		1-350 (99%)
+ 		ALRU2		1-250 (99%)
+		PIMO3		1-600 (99%)
+		PSME      	1-650 (99%)
 
 
 >>lake tahoe forest management >> https://www.fs.usda.gov/Internet/FSE_DOCUMENTS/fsm9_046124.pdf
