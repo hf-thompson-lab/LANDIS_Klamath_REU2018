@@ -1,0 +1,244 @@
+library(ggpubr)
+library(ggplot2)
+library(reshape2)
+
+scenarioPath <- "D:/Evan/91 Year Runs Output"
+
+sims <- list.dirs(scenarioPath, recursive = F, full.names = F)
+
+sims
+
+## making and plot mean fire return intervals ---- 
+
+mask.active.cells <- raster('C:/Users/hfintern/Desktop/Klamath_ForestXSiskiyouCounty/clippedRaster/mask_activeCells.img')
+simus.selection <- sims # 7-2-18 PnET+FIRE+FUEL+DevCUT+FBreak 50 a2 scenario
+
+rasters <- lapply (simus.selection, function (sim){
+  general.root.path <- "D:/Evan/91 Year Runs Output"#"C:/Users/hfintern/Desktop/Klamath_ForestXSiskiyouCounty/Saved Output"
+  
+  setwd(general.root.path)
+  setwd(sim)
+  
+  if (length(list.files(path = './fire')) ==0) { return(NULL) }
+  ras.list <- paste0('fire/severity-',1:91,'.img') 
+  rastack  <- stack (ras.list)
+  
+  rastack <- reclassify(rastack,rcl = matrix (ncol = 3,byrow=T,data =c(-1,2.5,0,2.6,20,1)))
+  
+  try1 <- calc (rastack, fun= function (a){
+    m <- rle(a)
+    o <- mean(m$lengths [which (m$values==0)],na.rm=T)
+    if (is.nan(o)){o<-NA}
+    return(o)
+  })
+  extent(try1) <- extent (mask.active.cells)
+  mfri <- try1 * mask.active.cells
+  #plot(mfri, add=T, title=sim)
+  #writeRaster(mfri,paste0('fire/MeanFireInterval.img'),overwrite=T,format="HFA", datatype="INT2S", NAvalue=0 )
+  return(mfri)
+})
+
+
+s <- stack(rasters[[3]],rasters[[5]],rasters[[9]],rasters[[11]])
+sp<- as(s, 'SpatialGridDataFrame')
+seededplots<- spplot(sp, names.attr= simus.selection[c(3, 5, 9, 11)], main = "Mean Fire Return Interval (Years) SEED=3333",
+                     colorkey=list(height =.75, at=c(seq(10, 20, 5), seq(20, 50, 10),70, 100)), labels=c(seq(10, 20, 5) ,seq(20, 50, 10),70, 100) , col.regions = colorRampPalette(c("red", "orange", "yellow","green","darkgreen") ) )
+plot(seededplots)
+
+s1 <- stack(rasters[[4]],rasters[[6]],rasters[[10]],rasters[[12]])
+sp1<- as(s1, 'SpatialGridDataFrame')
+notseededplots<- spplot(sp1,names.attr= simus.selection[c(4, 6, 10, 12)], main = "Mean Fire Return Interval (Years) SEEDnotSET",
+                        colorkey=list(height =.75, at=c(seq(10, 20, 5), seq(20, 50, 10),70, 100)), labels=c(seq(10, 20, 5) ,seq(20, 50, 10),70, 100) , col.regions = colorRampPalette(c("red", "orange", "yellow","green","darkgreen") ) )
+plot(notseededplots)
+
+# plotting cut history and fire severity 
+
+chRas <- lapply (simus.selection, function (sim){
+  general.root.path <- "D:/Evan/91 Year Runs Output"#"C:/Users/hfintern/Desktop/Klamath_ForestXSiskiyouCounty/Saved Output"
+  
+  setwd(general.root.path)
+  setwd(sim)
+  
+  if (length(list.files(path = './land-use-maps')) ==0) { return(NULL) }
+  #ras<- paste0('land-use-maps/cutHistory.img') 
+  ras<- paste0('logs/severityHistory.img')
+
+  return(raster(ras))
+})
+
+s2 <- stack(chRas[[5]],chRas[[6]],chRas[[11]],chRas[[12]])
+sp2<- as(s2, 'SpatialGridDataFrame')
+# notseededplots<- spplot(sp1,names.attr= simus.selection[c(4, 6, 10, 12)], main = "Mean Fire Return Interval (Years) SEEDnotSET",
+#                         colorkey=list(height =.75, at=c(seq(10, 20, 5), seq(20, 50, 10),70, 100)), labels=c(seq(10, 20, 5) ,seq(20, 50, 10),70, 100) , col.regions = colorRampPalette(c("red", "orange", "yellow","green","darkgreen") ) )
+# plot(notseededplots)
+
+
+# ploting AGB for each simulation ---- 
+
+constrainPlot <- function(plot, xlim= c(0,91), ylim){
+  cp <- plot + scale_x_continuous(limits = xlim) + scale_y_continuous(limits= ylim)
+  return(cp)
+}
+
+graphs <- list()
+graphs <- lapply (simus.selection, function (sim){
+  general.root.path <- "D:/Evan/91 Year Runs Output"
+  
+  setwd(general.root.path)
+  setwd(sim)
+  
+  agbPath<- "output/agbiomass/AGBiomass_.txt"
+  agb<- read.table(agbPath, header=T)
+  
+  meltagb <- melt(agb, id = "Time") 
+  
+  p1<- ggplot(meltagb , aes(x= Time, y= value, color=variable)) +geom_smooth() + labs(title="Change in AGB over time ", subtitle= sim, y="AGB in g/m2") + theme_linedraw()
+  p1 <- constrainPlot(p1, ylim = c(0,6000))
+  return(p1)
+})
+
+
+# g_legend<-function(a.gplot){
+#   tmp <- ggplot_gtable(ggplot_build(a.gplot))
+#   leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
+#   legend <- tmp$grobs[[leg]]
+#   return(legend)}
+# 
+# mylegend<-g_legend(p1)
+
+
+
+ggarrange(graphs[[1]],graphs[[3]],graphs[[5]],graphs[[7]],graphs[[9]],graphs[[11]], ncol=3, nrow=2, common.legend = TRUE, legend="bottom")
+
+ggarrange(graphs[[2]],graphs[[4]],graphs[[6]],graphs[[8]],graphs[[10]],graphs[[12]], ncol=3, nrow=2, common.legend=T, legend="bottom")
+
+
+# graphing fire stats ---- 
+dataFrames <- lapply (simus.selection, function (sim){
+  general.root.path <- "D:/Evan/91 Year Runs Output"
+  
+  setwd(general.root.path)
+  setwd(sim)
+  if (length(list.files(path = './fire')) ==0) { return(NULL) }
+  fireEventPath <- "dynamic-fire-events-log.csv"
+  dfe <- read.csv(fireEventPath, header=T)
+  
+  ms <- numeric(91)
+  meds <- numeric(91)
+  mck <- numeric(91)
+  medck<- numeric(91)
+  size <- numeric(91)
+  for (i in 1:91)
+  {
+    ms[i] <- mean(dfe[dfe$Time==i,]$MeanSeverity)
+    meds[i] <- median(dfe[dfe$Time==i,]$MeanSeverity)
+    mck[i] <- sum(dfe[dfe$Time==i,]$CohortsKilled)
+    medck[i] <- sum(dfe[dfe$Time==i,]$TotalSites)
+    size[i] <- max(dfe[dfe$Time==i,]$SizeBin)
+    
+  }
+  
+  df <-data.frame(Time = 1:91, MeanSeverity=ms, MedianSeverity=meds,CohortsKilled=mck, TotalSites=medck, Size= size,  SIM=rep(sim, 91))
+  return(df)
+})
+
+completedf<- do.call( rbind, dataFrames)
+
+meltdf <- melt(completedf, id=c("Time", "MedianSeverity", "CohortsKilled", "TotalSites", "MeanSeverity", "Size" ))
+
+p4<- ggplot(subset(meltdf, grepl(3333,meltdf$value, ignore.case = T )), aes(x=Time, y=MeanSeverity, color= value)) + geom_smooth(level=.9) + theme_linedraw() +  labs(title="MeanSeverity");p4
+
+p5<- ggplot(subset(meltdf, grepl("not",meltdf$value, ignore.case = T )), aes(x=Time, y=CohortsKilled, color= value)) + geom_smooth(level=.9) + geom_jitter() + theme_linedraw()+  labs(title="CohortsKilled");p5
+
+
+
+p6<- ggplot(meltdf, aes(x=Time, y=TotalSites, color= value))+geom_point() + geom_smooth() + theme_linedraw()+  labs(title="TotalSites");p6
+
+meltdf$Size[meltdf$Size=="-Inf"]<-0 
+p7<- ggplot(meltdf, aes(x=Time, y=Size, color= value))+geom_point() + geom_smooth() + theme_linedraw()+  labs(title="Max fire Size");p7
+
+
+p = ggplot(subset(meltdf, grepl(3333,meltdf$value, ignore.case = T )), aes(x=Size)) + theme_classic()+
+  geom_histogram(position="identity", colour="grey40", alpha=0.2, bins = 6, breaks=c(0,1,2,3,4,5)) +  labs(title="Max recorded fire size over all years")+
+  facet_grid(. ~ value);p
+
+
+# testing of dividing the data into early, mid, and late periods and then graphing box plots ----
+
+# early  1:30
+# mid    31 :60 
+# late   61:91 
+
+earlyTest <- subset(meltdf, grepl(3333,meltdf$value, ignore.case = T ) & meltdf$Time %in% 1:30)
+t1<- ggplot(earlyTest, aes(x=value, y=MeanSeverity, color= value)) + geom_boxplot() + ylim(c(3,5)) + labs(title="Early" )+ theme_classic() +theme(plot.title = element_text(margin = margin(t = 10, b = -30)))+theme(plot.title = element_text(hjust = 0.5))+ theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())
+
+midTest <- subset(meltdf, grepl(3333,meltdf$value, ignore.case = T ) & meltdf$Time %in% 31:60)
+t2<- ggplot(earlyTest, aes(x=value, y=MeanSeverity, color= value)) + geom_boxplot()+ ylim(c(3,5))+ labs(title="Middle" ) + theme_classic() +theme(plot.title = element_text(margin = margin(t = 10, b = -30)))+theme(plot.title = element_text(hjust = 0.5))+  theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+theme(axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank(), axis.line.y = element_line(colour="grey40", linetype = "dashed"))
+
+
+lateTest <- subset(meltdf, grepl(3333,meltdf$value, ignore.case = T ) & meltdf$Time %in% 61:91)
+t3<- ggplot(earlyTest, aes(x=value, y=MeanSeverity, color= value)) + geom_boxplot()+ ylim(c(3,5)) + labs(title="Late" )+ theme_classic() +theme(plot.title = element_text(margin = margin(t = 10, b = -30))) +theme(plot.title = element_text(hjust = 0.5))+   theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+theme(axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank(), axis.line.y = element_line(colour="grey40", linetype = "dashed"))
+
+figure <- ggarrange(t1,t2,t3, common.legend=T, legend="bottom", ncol=3) 
+
+annotate_figure(figure,  top = text_grob("Mean Severity Seed=3333", color = "Black", face = "bold", size = 14))#,bottom = text_grob("Data source: \n ToothGrowth data set", color = "blue", hjust = 1, x = 1, face = "italic", size = 10))
+
+
+vars.toGraph <- c("MeanSeverity", "CohortsKilled", "TotalSites", "Size" )
+
+
+## TOTAL AREA AFFECTED BY FIRES ---- 
+labs <- c("A2 scenario", "A2 scenario & LU+", "Recent Trends", "Recent Trends & LU+")
+  
+  earlyTest <- subset(meltdf, grepl(3333,meltdf$value, ignore.case = T ) & meltdf$Time %in% 1:30)
+  t1<- ggplot(earlyTest, aes(x=value, y=TotalSites*7.29, color= value)) + geom_boxplot() + labs(title="Early" )+ theme_classic() +theme(plot.title = element_text(margin = margin(t = 10, b = -30)))+theme(plot.title = element_text(hjust = 0.5))+ theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank() )+ theme(axis.title.y=element_blank())+
+     scale_x_discrete(labels=labs) + theme(axis.text.x = element_text(angle = 75)) 
+
+                
+  midTest <- subset(meltdf, grepl(3333,meltdf$value, ignore.case = T ) & meltdf$Time %in% 31:60)
+  t2<- ggplot(earlyTest, aes(x=value, y=TotalSites*7.29, color= value)) + geom_boxplot()+ labs(title="Middle" ) + theme_classic() +theme(plot.title = element_text(margin = margin(t = 10, b = -30)))+theme(plot.title = element_text(hjust = 0.5))+  theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+theme(axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank(), axis.line.y = element_line(colour="grey40", linetype = "dashed"))+
+              scale_x_discrete(labels=labs) + theme(axis.text.x = element_text(angle = 75))
+  
+  
+  lateTest <- subset(meltdf, grepl(3333,meltdf$value, ignore.case = T ) & meltdf$Time %in% 61:91)
+  t3<- ggplot(earlyTest, aes(x=value, y=TotalSites*7.29, color= value)) + geom_boxplot() + labs(title="Late" )+ theme_classic() +theme(plot.title = element_text(margin = margin(t = 10, b = -30))) +theme(plot.title = element_text(hjust = 0.5))+   theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+theme(axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank(), axis.line.y = element_line(colour="grey40", linetype = "dashed"))+
+             scale_x_discrete(labels=labs) + theme(axis.text.x = element_text(angle = 75))
+  
+  figure <- ggarrange(t1,t2,t3, common.legend=T, legend="none", ncol=3) 
+  
+  comp <- annotate_figure(figure,  top = text_grob(paste("Total area affected by fires", "(Seed 3333)"), color = "Black", face = "bold", size = 14),
+                          bottom = text_grob("Scenarios", color = "Black", face = "bold", size = 12),
+                          left = text_grob("Area (ha)", color = "Black",face = "bold", rot = 90,size = 12))
+                          #,bottom = text_grob("Data source: \n ToothGrowth data set", color = "blue", hjust = 1, x = 1, face = "italic", size = 10))
+  comp
+
+  
+## a diffrent variable  ---- 
+  labs <- c("A2 scenario", "A2 scenario & LU+", "Recent Trends", "Recent Trends & LU+")
+  
+  earlyTest <- subset(meltdf, grepl(3333,meltdf$value, ignore.case = T ) & meltdf$Time %in% 1:30)
+  t1<- ggplot(earlyTest, aes(x=value, y=Size, color= value)) + geom_boxplot() + labs(title="Early" )+ theme_classic() +theme(plot.title = element_text(margin = margin(t = 10, b = -30)))+theme(plot.title = element_text(hjust = 0.5))+ theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank() )+ theme(axis.title.y=element_blank())+
+    scale_x_discrete(labels=labs) + theme(axis.text.x = element_text(angle = 75)) +# geom_jitter(width=.3)+
+    stat_summary(fun.y = "mean", geom = "point", shape = 8, size = 2)
+  
+  
+  midTest <- subset(meltdf, grepl(3333,meltdf$value, ignore.case = T ) & meltdf$Time %in% 31:60)
+  t2<- ggplot(earlyTest, aes(x=value, y=Size, color= value)) + geom_boxplot()+ labs(title="Middle" ) + theme_classic() +theme(plot.title = element_text(margin = margin(t = 10, b = -30)))+theme(plot.title = element_text(hjust = 0.5))+  theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+theme(axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank(), axis.line.y = element_line(colour="grey40", linetype = "dashed"))+
+    scale_x_discrete(labels=labs) + theme(axis.text.x = element_text(angle = 75))+# geom_jitter(width=.3)+
+    stat_summary(fun.y = "mean", geom = "point", shape = 8, size = 2)
+  
+  
+  lateTest <- subset(meltdf, grepl(3333,meltdf$value, ignore.case = T ) & meltdf$Time %in% 61:91)
+  t3<- ggplot(earlyTest, aes(x=value, y=Size, color= value)) + geom_boxplot() + labs(title="Late" )+ theme_classic() +theme(plot.title = element_text(margin = margin(t = 10, b = -30))) +theme(plot.title = element_text(hjust = 0.5))+   theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+theme(axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank(), axis.line.y = element_line(colour="grey40", linetype = "dashed"))+
+    scale_x_discrete(labels=labs) + theme(axis.text.x = element_text(angle = 75)) +# geom_jitter(width=.3)+
+    stat_summary(fun.y = "mean", geom = "point", shape = 8, size = 2)
+  
+  figure <- ggarrange(t1,t2,t3, common.legend=T, legend="none", ncol=3) 
+  
+  comp <- annotate_figure(figure,  top = text_grob(paste("Fire Size", "(Seed 3333)"), color = "Black", face = "bold", size = 14),
+                          bottom = text_grob("Scenarios", color = "Black", face = "bold", size = 12),
+                          left = text_grob("Number of cohorts killed", color = "Black",face = "bold", rot = 90,size = 12))
+
+  comp
+  
+  
