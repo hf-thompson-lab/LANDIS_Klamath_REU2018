@@ -18,7 +18,7 @@
 # mechanical treatments would be used to prevent fire from entering land near developed area. 
 # cuts are assumed to last 15 years and after 15 years the area is eligible to cut again
 # cut limit per year is 4% of total active cells - this is then divided between FS and private cut limits 
-    # in a bad year the FS be able to cut an extra 50 to 200 cells #not implemented yet 
+# in a bad year the FS be able to cut an extra 50 to 200 cells #not implemented yet 
 
 # land around developed area will be cut if there is enough fire within 415.53ha circle of the development (not sure on the size)
 #                               (9X9 cell search for areas around development that >=40.35% [23/57] of the cells have fire on them) 
@@ -122,107 +122,102 @@ linesLog <- c(linesLog, paste("OoB #:", length(outOfBoundsCells)), paste("WA #:"
 
 
 if (!ONLYFIREBREAK){
-# Section - identifying cells with fire that is within a ciclre of 9 cells (415.53 ha) from developed areas ----
-
-# metadata for developRaster if you want it #developed areas # 580 -584 
-#attrTablePath <- "clippedRaster/land-use/GAP_LANDFIRE_National_Terrestrial_Ecosystems_2011_Attributes.csv"
-#attrTable <- read.table(attrTablePath, header = T, sep=",");clippedTable <- attrTable[which(attrTable$Value %in% vals),];clippedTable[c(1,19)]
-
-# get severity of fire with in proximity to development 
-#ideally we can order the severities here and then figure out where fire is closest to which developed area (or fire management area)
-
-cells <- which(values(developRaster) > 580) #581 is developed open space 582-584 are low to high intensity of development
-neighborhoodMatrix <- matrix(1, ncol=9, nrow = 9) # not sure on the sizing here 415.53ha circle 
-neighborhoodMatrix[5,5] <- 0
-
-# this gets rid of the boxy fire response cuts  
-nm <- neighborhoodMatrix
-corners <- c(1:3, 6:9)
-for (r in corners)
-{
-  for (c in corners)
+  # Section - identifying cells with fire that is within a ciclre of 9 cells (415.53 ha) from developed areas ----
+  
+  # metadata for developRaster if you want it #developed areas # 580 -584 
+  #attrTablePath <- "clippedRaster/land-use/GAP_LANDFIRE_National_Terrestrial_Ecosystems_2011_Attributes.csv"
+  #attrTable <- read.table(attrTablePath, header = T, sep=",");clippedTable <- attrTable[which(attrTable$Value %in% vals),];clippedTable[c(1,19)]
+  
+  # get severity of fire with in proximity to development 
+  #ideally we can order the severities here and then figure out where fire is closest to which developed area (or fire management area)
+  
+  cells <- which(values(developRaster) > 580) #581 is developed open space 582-584 are low to high intensity of development
+  neighborhoodMatrix <- matrix(1, ncol=9, nrow = 9) # not sure on the sizing here 415.53ha circle 
+  neighborhoodMatrix[5,5] <- 0
+  
+  # this gets rid of the boxy fire response cuts  
+  nm <- neighborhoodMatrix
+  corners <- c(1:3, 6:9)
+  for (r in corners)
   {
-    if (( r+c ==2 | (r+c==3) | (r+c ==4) |abs(r-c) ==8 | (abs(r-c)==7) | (abs(r-c) ==6) |r+c ==16 | (r+c==18) | (r+c ==17)) )
-      nm[r,c] <- NA
+    for (c in corners)
+    {
+      if (( r+c ==2 | (r+c==3) | (r+c ==4) |abs(r-c) ==8 | (abs(r-c)==7) | (abs(r-c) ==6) |r+c ==16 | (r+c==18) | (r+c ==17)) )
+        nm[r,c] <- NA
+    }
   }
-}
-neighborhoodMatrix <- nm
-
-sumTable <- data.frame(cell=numeric(length(cells)), mean=numeric(length(cells)), median=numeric(length(cells)), count=numeric(length(cells)) )
-sV <- values(severityRaster)
-for (i in 1:length(cells)) # this could be sped up 
-{
-  adj <- adjacent(developRaster, cells[i], directions=neighborhoodMatrix, pairs=F, target=NULL, sorted=T,  include=FALSE, id=T)
-  sumTable[i,]<-c(cells[i], mean(sV[adj], na.rm=T), median(sV[adj], na.rm = T), sum(sV[adj] > 2))
-}
-sumTable <- sumTable[order(-sumTable$mean),]
-
-#where 2 is the mean and median and 23/57 cells need fire as thresholds for cutting.  
-proximityToDevelopmentCells <- adjacent(developRaster, sumTable$cell[sumTable$mean>2 | sumTable$median>2 | sumTable$count >= 23], directions=neighborhoodMatrix, pairs=F, target=NULL, sorted=T,  include=FALSE, id=T)
-print(paste(length(proximityToDevelopmentCells), "cells identified because of fire that is near developed cells"))
-
-linesLog <- c(linesLog, paste(length(proximityToDevelopmentCells), "cells identified because of fire that is near developed cells"))
-
-
-#Section - cutting in areas surrounding development ----
-dR <- developRaster
-values(dR)[which(values(developRaster) < 580)] <- 1  #we only care about the space labeled as developed which is 580-584
-
-neighM <- matrix(1, ncol=3, nrow = 3) # clear within a quarter of a mile of important structures -- from SISKIYOU COUNTY WILDFIRE PROTECTION PLAN APRIL 23, 2008
-neighM[2,2] <- 0
-cells <- proximityToDevelopmentCells
-
-#take into account slope. 
-rm(adj)
-adj<- adjacent(dR, cells, directions=neighM, pairs=F, target=NULL, sorted=T,  include=FALSE, id=T)
-df <- data.frame(cellNum=adj, slopes=values(slopeRaster)[adj]) 
-df <- rbind(df,data.frame(cellNum=cells, slopes=values(slopeRaster)[cells]))
-
-values(dR)[which(values(dR) < 585)] <- 1 # set the development areas to be forest growth
-values(dR)[subset(df, df$slopes <31)$cellNum] <- 20 # regular cuts 
-values(dR)[subset(df, df$slopes >30)$cellNum] <- 21 # steep cuts 
-values(dR)[subset(df, df$slopes >60)$cellNum] <- 1  # if slope is too steep dont cut
-
-
-# Section - Salavage logging - clear cutting (and planting?) burnt forests ----
-# might need addition qualifier of "if fire was super bad" (probably best to be implemented as if fire has reach XX% of active cells)
-rm(cells)
-cells <- which(values(severityRaster) > 2 & values(severityRaster)<6)
-
-rm(df)
-df <- data.frame(cellNum=adjacent(dR, cells, directions=8, pairs=F, target=NULL, sorted=T,  include=FALSE, id=T), slopes=values(slopeRaster)[adjacent(dR, cells, directions=8, pairs=F, target=NULL, sorted=T,  include=FALSE, id=T)]) 
-df <- rbind(df,data.frame(cellNum=cells, slopes=values(slopeRaster)[cells]))
-values(dR)[subset(df, df$slopes <31)$cellNum] <- 30 #regular cuts
-values(dR)[subset(df, df$slopes >30)$cellNum] <- 31 #step cuts 
-values(dR)[subset(df, df$slopes >60)$cellNum] <- 1    #too steep to cut 
-values(dR)[which(values(dR) == 581)] <-1 # set the open space to grow 
-
-developedCells <- which(values(dR) >581 &values(dR) <1000 )# developed cells that werent hit by fire... 
-values(dR)[developedCells] <- 1 #set for forest to growth 
-
-
-# Section - get fuel break cuts ---- 
-source("FindFuelBreaks.R")
-fuelBreaks <- findFuelBreaks(fuelRaster, fuelValsToConsider= (c(1:6,10,11)+1), minCellsConnect=35, numFuelsToSplit=8, numOfLargestFuelsToPickFrom=15)
-
-#try to keep the FS cutting the same fire breaks 
-
-
-# if there is a fuel break in FS land then get rid of it. 
-# read in this historic fuel breaks and cut it (the recent cuts destoryer should take care of the currency problem)
-
-
-#let private owners cut whatever they want so they can keep 
-
-
-values(dR)[which(!is.na(values(fuelBreaks)))] <- 155
-#plot(dR)
+  neighborhoodMatrix <- nm
+  
+  sumTable <- data.frame(cell=numeric(length(cells)), mean=numeric(length(cells)), median=numeric(length(cells)), count=numeric(length(cells)) )
+  sV <- values(severityRaster)
+  for (i in 1:length(cells)) # this could be sped up 
+  {
+    adj <- adjacent(developRaster, cells[i], directions=neighborhoodMatrix, pairs=F, target=NULL, sorted=T,  include=FALSE, id=T)
+    sumTable[i,]<-c(cells[i], mean(sV[adj], na.rm=T), median(sV[adj], na.rm = T), sum(sV[adj] > 2))
+  }
+  sumTable <- sumTable[order(-sumTable$mean),]
+  
+  #where 2 is the mean and median and 23/57 cells need fire as thresholds for cutting.  
+  proximityToDevelopmentCells <- adjacent(developRaster, sumTable$cell[sumTable$mean>2 | sumTable$median>2 | sumTable$count >= 23], directions=neighborhoodMatrix, pairs=F, target=NULL, sorted=T,  include=FALSE, id=T)
+  print(paste(length(proximityToDevelopmentCells), "cells identified because of fire that is near developed cells"))
+  
+  linesLog <- c(linesLog, paste(length(proximityToDevelopmentCells), "cells identified because of fire that is near developed cells"))
+  
+  
+  #Section - cutting in areas surrounding development ----
+  dR <- developRaster
+  values(dR)[which(values(developRaster) < 580)] <- 1  #we only care about the space labeled as developed which is 580-584
+  
+  neighM <- matrix(1, ncol=3, nrow = 3) # clear within a quarter of a mile of important structures -- from SISKIYOU COUNTY WILDFIRE PROTECTION PLAN APRIL 23, 2008
+  neighM[2,2] <- 0
+  cells <- proximityToDevelopmentCells
+  
+  #take into account slope. 
+  rm(adj)
+  adj<- adjacent(dR, cells, directions=neighM, pairs=F, target=NULL, sorted=T,  include=FALSE, id=T)
+  df <- data.frame(cellNum=adj, slopes=values(slopeRaster)[adj]) 
+  df <- rbind(df,data.frame(cellNum=cells, slopes=values(slopeRaster)[cells]))
+  
+  values(dR)[which(values(dR) < 585)] <- 1 # set the development areas to be forest growth
+  values(dR)[subset(df, df$slopes <31)$cellNum] <- 20 # regular cuts 
+  values(dR)[subset(df, df$slopes >30)$cellNum] <- 21 # steep cuts 
+  values(dR)[subset(df, df$slopes >60)$cellNum] <- 1  # if slope is too steep dont cut
+  
+  
+  # Section - Salavage logging - clear cutting (and planting?) burnt forests ----
+  # might need addition qualifier of "if fire was super bad" (probably best to be implemented as if fire has reach XX% of active cells)
+  rm(cells)
+  cells <- which(values(severityRaster) > 2 & values(severityRaster)<6)
+  
+  rm(df)
+  df <- data.frame(cellNum=adjacent(dR, cells, directions=8, pairs=F, target=NULL, sorted=T,  include=FALSE, id=T), slopes=values(slopeRaster)[adjacent(dR, cells, directions=8, pairs=F, target=NULL, sorted=T,  include=FALSE, id=T)]) 
+  df <- rbind(df,data.frame(cellNum=cells, slopes=values(slopeRaster)[cells]))
+  values(dR)[subset(df, df$slopes <31)$cellNum] <- 30 #regular cuts
+  values(dR)[subset(df, df$slopes >30)$cellNum] <- 31 #step cuts 
+  values(dR)[subset(df, df$slopes >60)$cellNum] <- 1    #too steep to cut 
+  values(dR)[which(values(dR) == 581)] <-1 # set the open space to grow 
+  
+  developedCells <- which(values(dR) >581 &values(dR) <1000 )# developed cells that werent hit by fire... 
+  values(dR)[developedCells] <- 1 #set for forest to growth 
+  
+  
+  # Section - get fuel break cuts ---- 
+  
+  if (timestep%%5 ==0){
+    source("FindFuelBreaks.R")
+    fuelBreaks <- findFuelBreaks(fuelRaster, fuelValsToConsider= (c(1:6,10,11)+1), minCellsConnect=35, numFuelsToSplit=8, numOfLargestFuelsToPickFrom=15)
+    values(dR)[which(!is.na(values(fuelBreaks)))] <- 155
+  }
+  
+  
 }else{#ONLYFIREBREAKS 
-  source("FindFuelBreaks.R")
-  fuelBreaks <- findFuelBreaks(fuelRaster, fuelValsToConsider= (c(1:6,10,11)+1), minCellsConnect=35, numFuelsToSplit=8, numOfLargestFuelsToPickFrom=15)
-  values(fuelBreaks)[which(!is.na(values(fuelBreaks)) )] <- 155 
-  values(fuelBreaks)[which(is.na(values(fuelBreaks)) )]<-0
-  dR <- fuelBreaks
+  if (timestep%%5 ==0){
+    source("FindFuelBreaks.R")
+    fuelBreaks <- findFuelBreaks(fuelRaster, fuelValsToConsider= (c(1:6,10,11)+1), minCellsConnect=35, numFuelsToSplit=8, numOfLargestFuelsToPickFrom=15)
+    values(fuelBreaks)[which(!is.na(values(fuelBreaks)) )] <- 155 
+    values(fuelBreaks)[which(is.na(values(fuelBreaks)) )]<-0
+    dR <- fuelBreaks
+  }
 }
 
 
@@ -244,36 +239,29 @@ pri <- subset(ownerDF, owner==0)$cell
 #change FS fuel break cutting code 
 values(dR)[intersect(which(values(dR)==155), FS)] <- 156 
 
-#TODO- Section - clear fire breaks on federal land and put in the permanant ones. 
+#Section - clear fire breaks on federal land and put in the permanant ones (if permanent cuts are one). ---- 
 if (PERMANENTFSFIREBREAKS)
 {
-  if (timestep == 1 || sample(1:100, 1) == timestep){ # store the cuts on the first time step or if there was a stange incident (1% chance). 
-    permanentFuelBeaks <- which(values(dR) == 156)
-    
-    fsCutRaster <- raster(fsCutPath)
-    
-    #this would be used to store the cuts (that would be in FS)
-    cat(permanentFuelBeaks, file="land-use-maps/permanentFSCuts.txt", sep=", ", append=T) # file =""
-    cat("", file="land-use-maps/permanentFSCuts.txt", sep="\n", append=T) # file =""
-  }
+  values(dR)[which(values(dR) == 156)] <- 1 # Clear fire breaks made on federal land (set to forest growth)
   
-  values(dR)[which(values(dR) == 156)] <- 1 # Clear fire breaks (set to forest growth)
-  
-  if (timestep %% 15 == 1){ # FS only cuts every 15 years 
-    
-    #read in the permanent cuts 
-    rawdat <- readLines("land-use-maps/permanentFSCuts.txt")
-    permanentCutCells <- as.numeric(unlist(strsplit(rawdat, ", ")))
-    
-    values(dR)[permanentCutCells] <- 156 # cut the permanent cuts
-    
-    # Finally make sure that none of the added cuts were on the wilderness area 
-    values(dR)[wildernessCells] <-1  # this is probably extraneous depending on the permanent FS cuts are determined
-  }
+  fsCutVals <- 
+    if (timestep%%10 == 1) {
+      fsCutRaster <- raster(fsCutPath)
+      permanentCutCells <- which(values(fsCutRaster)==101 | values(fsCutRaster)==99) 
+      values(dR)[permanentCutCells] <- 156 # cut the permanent cuts
+    } else if (timestep %% 10 == 4) {
+      fsCutRaster <- raster(fsCutPath)
+      permanentCutCells <- which(values(fsCutRaster) ==102 | values(fsCutRaster==50)) 
+      values(dR)[permanentCutCells] <- 156 # cut the permanent cuts
+    }else if (timestep %% 10 == 8) {
+      fsCutRaster <- raster(fsCutPath)
+      permanentCutCells <- which(values(fsCutRaster) ==103| values(fsCutRaster==98)) 
+      values(dR)[permanentCutCells] <- 156 # cut the permanent cuts
+    }
 }
 
 
-# Section - Apply cut limit. 
+# Section - Apply cut limit. ----
 #if over either of the limits then random sample to delete proposed cuts. 
 if(length(pri) > privateLimit)
 {
@@ -321,7 +309,7 @@ timestepData <- data.frame(TimeStep= timestep, CellsCut = cutsMade,FSCuts=length
 
 print(freq(dR))
 
-if (TRUE){ # printing out graphs at each time step 
+if (F){ # printing out graphs at each time step 
   somePDFPath = paste0("C:/Users/hfintern/Desktop/Results/plot-", timestep,".pdf")
   pdf(file=somePDFPath)  
   plot(severityRaster, main=paste0("Severity-", timestep))
