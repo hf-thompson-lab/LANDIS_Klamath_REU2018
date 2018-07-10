@@ -1,6 +1,7 @@
 library(ggpubr)
 library(ggplot2)
 library(reshape2)
+library(raster)
 
 scenarioPath <- "D:/Evan/91 Year Runs Output"
 
@@ -60,17 +61,16 @@ chRas <- lapply (simus.selection, function (sim){
   setwd(sim)
   
   if (length(list.files(path = './land-use-maps')) ==0) { return(NULL) }
-  #ras<- paste0('land-use-maps/cutHistory.img') 
-  ras<- paste0('logs/severityHistory.img')
+  ras<- paste0('land-use-maps/cutHistory.img') 
+ # ras<- paste0('logs/severityHistory.img')
 
   return(raster(ras))
 })
-
+commonNames <- c("A2 & LU seed=3333", "A3 and LU seed=RND", "Recent Trends & LU seed=3333", "Recent Trends & LU seed=RND") #simus.selection[c(5, 6, 11, 12)]
 s2 <- stack(chRas[[5]],chRas[[6]],chRas[[11]],chRas[[12]])
 sp2<- as(s2, 'SpatialGridDataFrame')
-# notseededplots<- spplot(sp1,names.attr= simus.selection[c(4, 6, 10, 12)], main = "Mean Fire Return Interval (Years) SEEDnotSET",
-#                         colorkey=list(height =.75, at=c(seq(10, 20, 5), seq(20, 50, 10),70, 100)), labels=c(seq(10, 20, 5) ,seq(20, 50, 10),70, 100) , col.regions = colorRampPalette(c("red", "orange", "yellow","green","darkgreen") ) )
-# plot(notseededplots)
+plots2<- spplot(sp2,names.attr= commonNames, main = "Cut History ")
+plot(plots2)
 
 
 # ploting AGB for each simulation ---- 
@@ -196,12 +196,12 @@ labs <- c("A2 scenario", "A2 scenario & LU+", "Recent Trends", "Recent Trends & 
 
                 
   midTest <- subset(meltdf, grepl(3333,meltdf$value, ignore.case = T ) & meltdf$Time %in% 31:60)
-  t2<- ggplot(earlyTest, aes(x=value, y=TotalSites*7.29, color= value)) + geom_boxplot()+ labs(title="Middle" ) + theme_classic() +theme(plot.title = element_text(margin = margin(t = 10, b = -30)))+theme(plot.title = element_text(hjust = 0.5))+  theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+theme(axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank(), axis.line.y = element_line(colour="grey40", linetype = "dashed"))+
+  t2<- ggplot(earlyTest, aes(x=value, y=TotalSites*7.29, color= value)) + geom_boxplot()+ labs(title="Middle" ) + theme_classic() +theme(plot.title = element_text(margin = margin(t = 10, b = -30)))+theme(plot.title = element_text(hjust = 0.5))+ theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+theme(axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank(), axis.line.y = element_line(colour="grey40", linetype = "dashed"))+
               scale_x_discrete(labels=labs) + theme(axis.text.x = element_text(angle = 75))
   
   
   lateTest <- subset(meltdf, grepl(3333,meltdf$value, ignore.case = T ) & meltdf$Time %in% 61:91)
-  t3<- ggplot(earlyTest, aes(x=value, y=TotalSites*7.29, color= value)) + geom_boxplot() + labs(title="Late" )+ theme_classic() +theme(plot.title = element_text(margin = margin(t = 10, b = -30))) +theme(plot.title = element_text(hjust = 0.5))+   theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+theme(axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank(), axis.line.y = element_line(colour="grey40", linetype = "dashed"))+
+  t3<- ggplot(earlyTest, aes(x=value, y=TotalSites*7.29, color= value)) + geom_boxplot() + labs(title="Late" )+ theme_classic() +theme(plot.title = element_text(margin = margin(t = 10, b = -30))) +theme(plot.title = element_text(hjust = 0.5))+ theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+theme(axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank(), axis.line.y = element_line(colour="grey40", linetype = "dashed"))+
              scale_x_discrete(labels=labs) + theme(axis.text.x = element_text(angle = 75))
   
   figure <- ggarrange(t1,t2,t3, common.legend=T, legend="none", ncol=3) 
@@ -213,32 +213,137 @@ labs <- c("A2 scenario", "A2 scenario & LU+", "Recent Trends", "Recent Trends & 
   comp
 
   
-## a diffrent variable  ---- 
+## cohorts killed   ---- 
   labs <- c("A2 scenario", "A2 scenario & LU+", "Recent Trends", "Recent Trends & LU+")
   
   earlyTest <- subset(meltdf, grepl(3333,meltdf$value, ignore.case = T ) & meltdf$Time %in% 1:30)
-  t1<- ggplot(earlyTest, aes(x=value, y=Size, color= value)) + geom_boxplot() + labs(title="Early" )+ theme_classic() +theme(plot.title = element_text(margin = margin(t = 10, b = -30)))+theme(plot.title = element_text(hjust = 0.5))+ theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank() )+ theme(axis.title.y=element_blank())+
+  t1<- ggplot(earlyTest, aes(x=value, y=CohortsKilled, color= value)) + geom_boxplot() + labs(title="Early" )+ theme_classic() +theme(plot.title = element_text(margin = margin(t = 10, b = -30)))+theme(plot.title = element_text(hjust = 0.5))+ theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank() )+ theme(axis.title.y=element_blank())+
     scale_x_discrete(labels=labs) + theme(axis.text.x = element_text(angle = 75)) +# geom_jitter(width=.3)+
     stat_summary(fun.y = "mean", geom = "point", shape = 8, size = 2)
   
   
   midTest <- subset(meltdf, grepl(3333,meltdf$value, ignore.case = T ) & meltdf$Time %in% 31:60)
-  t2<- ggplot(earlyTest, aes(x=value, y=Size, color= value)) + geom_boxplot()+ labs(title="Middle" ) + theme_classic() +theme(plot.title = element_text(margin = margin(t = 10, b = -30)))+theme(plot.title = element_text(hjust = 0.5))+  theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+theme(axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank(), axis.line.y = element_line(colour="grey40", linetype = "dashed"))+
+  t2<- ggplot(earlyTest, aes(x=value, y=CohortsKilled, color= value)) + geom_boxplot()+ labs(title="Middle" ) + theme_classic() +theme(plot.title = element_text(margin = margin(t = 10, b = -30)))+theme(plot.title = element_text(hjust = 0.5))+  theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+theme(axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank(), axis.line.y = element_line(colour="grey40", linetype = "dashed"))+
     scale_x_discrete(labels=labs) + theme(axis.text.x = element_text(angle = 75))+# geom_jitter(width=.3)+
     stat_summary(fun.y = "mean", geom = "point", shape = 8, size = 2)
   
   
   lateTest <- subset(meltdf, grepl(3333,meltdf$value, ignore.case = T ) & meltdf$Time %in% 61:91)
-  t3<- ggplot(earlyTest, aes(x=value, y=Size, color= value)) + geom_boxplot() + labs(title="Late" )+ theme_classic() +theme(plot.title = element_text(margin = margin(t = 10, b = -30))) +theme(plot.title = element_text(hjust = 0.5))+   theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+theme(axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank(), axis.line.y = element_line(colour="grey40", linetype = "dashed"))+
+  t3<- ggplot(earlyTest, aes(x=value, y=CohortsKilled, color= value)) + geom_boxplot() + labs(title="Late" )+ theme_classic() +theme(plot.title = element_text(margin = margin(t = 10, b = -30))) +theme(plot.title = element_text(hjust = 0.5))+   theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+theme(axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank(), axis.line.y = element_line(colour="grey40", linetype = "dashed"))+
     scale_x_discrete(labels=labs) + theme(axis.text.x = element_text(angle = 75)) +# geom_jitter(width=.3)+
     stat_summary(fun.y = "mean", geom = "point", shape = 8, size = 2)
   
   figure <- ggarrange(t1,t2,t3, common.legend=T, legend="none", ncol=3) 
   
-  comp <- annotate_figure(figure,  top = text_grob(paste("Fire Size", "(Seed 3333)"), color = "Black", face = "bold", size = 14),
+  comp <- annotate_figure(figure,  top = text_grob(paste("CohortsKilled", "(Seed 3333)"), color = "Black", face = "bold", size = 14),
                           bottom = text_grob("Scenarios", color = "Black", face = "bold", size = 12),
                           left = text_grob("Number of cohorts killed", color = "Black",face = "bold", rot = 90,size = 12))
 
   comp
+  
+## MeanSeverity
+  labs <- c("A2 scenario", "A2 scenario & LU+", "Recent Trends", "Recent Trends & LU+")
+  
+  earlyTest <- subset(meltdf, grepl(3333,meltdf$value, ignore.case = T ) & meltdf$Time %in% 1:30)
+  t1<- ggplot(earlyTest, aes(x=value, y=MeanSeverity, color= value)) + geom_boxplot() + labs(title="Early" )+ theme_classic() +theme(plot.title = element_text(margin = margin(t = 10, b = -30)))+theme(plot.title = element_text(hjust = 0.5))+ theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank() )+ theme(axis.title.y=element_blank())+
+    scale_x_discrete(labels=labs) + theme(axis.text.x = element_text(angle = 75)) +# geom_jitter(width=.3)+
+    stat_summary(fun.y = "mean", geom = "point", shape = 8, size = 2)+ ylim(c(3.5,4.75))
+  
+  
+  midTest <- subset(meltdf, grepl(3333,meltdf$value, ignore.case = T ) & meltdf$Time %in% 31:60)
+  t2<- ggplot(earlyTest, aes(x=value, y=MeanSeverity, color= value)) + geom_boxplot()+ labs(title="Middle" ) + theme_classic() +theme(plot.title = element_text(margin = margin(t = 10, b = -30)))+theme(plot.title = element_text(hjust = 0.5))+  theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+theme(axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank(), axis.line.y = element_line(colour="grey40", linetype = "dashed"))+
+    scale_x_discrete(labels=labs) + theme(axis.text.x = element_text(angle = 75))+# geom_jitter(width=.3)+
+    stat_summary(fun.y = "mean", geom = "point", shape = 8, size = 2) + ylim(c(3.5,4.75))
+  
+  
+  lateTest <- subset(meltdf, grepl(3333,meltdf$value, ignore.case = T ) & meltdf$Time %in% 61:91)
+  t3<- ggplot(earlyTest, aes(x=value, y=MeanSeverity, color= value)) + geom_boxplot() + labs(title="Late" )+ theme_classic() +theme(plot.title = element_text(margin = margin(t = 10, b = -30))) +theme(plot.title = element_text(hjust = 0.5))+   theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+theme(axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank(), axis.line.y = element_line(colour="grey40", linetype = "dashed"))+
+    scale_x_discrete(labels=labs) + theme(axis.text.x = element_text(angle = 75)) +# geom_jitter(width=.3)+
+    stat_summary(fun.y = "mean", geom = "point", shape = 8, size = 2)+ ylim(c(3.5,4.75))
+  
+  figure <- ggarrange(t1,t2,t3, common.legend=T, legend="none", ncol=3) 
+  
+  comp <- annotate_figure(figure,  top = text_grob(paste("MeanSeverity", "(Seed 3333)"), color = "Black", face = "bold", size = 14),
+                          bottom = text_grob("Scenarios", color = "Black", face = "bold", size = 12),
+                          left = text_grob("Fire severity", color = "Black",face = "bold", rot = 90,size = 12))
+  
+  comp
+  
+  ## extracting number of highest severity cells ----
+
+  rdata <- lapply (simus.selection, function (sim){
+    general.root.path <- "D:/Evan/91 Year Runs Output"#"C:/Users/hfintern/Desktop/Klamath_ForestXSiskiyouCounty/Saved Output"
+    
+    setwd(general.root.path)
+    setwd(sim)
+    
+    if (length(list.files(path = './fire')) ==0) { return(NULL) }
+    ras.list <- paste0('fire/severity-',1:91,'.img') 
+    count <- 1
+    df <- do.call( rbind, lapply(ras.list ,  function(ras) {
+      
+      r <- raster(ras)
+      vr <- values(r)
+      row <- data.frame(ID= sim, Time= count , three= sum(vr==3) , four= sum(vr==4),  five = sum(vr==5) , six= sum(vr==6), seven= sum(vr==7))
+      count <- count +1 
+      return(row)
+      
+    }))
+    
+    return(df)
+  })
+  
+  new <- do.call(function(l){
+    return(cbind(l,Time= 1:91))
+  }, rdata)
+  complete <- do.call(rbind, rdata)
+  complete$Time <- rep(1:91, 8)
+  complete
+  write.csv(complete ,"D:/Evan/severityData.csv")
+  
+  meltSeverity <- melt(complete, id=c("Time","three", "four", "five", "six", "seven"))
+# graphing highest severity area ----
+  earlyTest <- subset(meltSeverity, grepl("not",meltSeverity$value, ignore.case = T ) & meltSeverity$Time %in% 1:30)
+  t1<- ggplot(earlyTest, aes(x=value, y=seven*7.29, color= value)) + geom_boxplot() + labs(title="Early" )+ theme_classic() +theme(plot.title = element_text(margin = margin(t = 10, b = -30)))+theme(plot.title = element_text(hjust = 0.5))+ theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank() )+ theme(axis.title.y=element_blank())+
+    scale_x_discrete(labels=labs) + theme(axis.text.x = element_text(angle = 75)) +# geom_jitter(width=.3)+
+    stat_summary(fun.y = "mean", geom = "point", shape = 8, size = 2)
+  
+  
+  midTest <- subset(meltSeverity, grepl("not",meltSeverity$value, ignore.case = T ) & meltSeverity$Time %in% 31:60)
+  t2<- ggplot(earlyTest, aes(x=value, y=seven*7.29, color= value)) + geom_boxplot()+ labs(title="Middle" ) + theme_classic() +theme(plot.title = element_text(margin = margin(t = 10, b = -30)))+theme(plot.title = element_text(hjust = 0.5))+  theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+theme(axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank(), axis.line.y = element_line(colour="grey40", linetype = "dashed"))+
+    scale_x_discrete(labels=labs) + theme(axis.text.x = element_text(angle = 75))+# geom_jitter(width=.3)+
+    stat_summary(fun.y = "mean", geom = "point", shape = 8, size = 2) 
+  
+  
+  lateTest <- subset(meltSeverity, grepl("not",meltSeverity$value, ignore.case = T ) & meltSeverity$Time %in% 61:91)
+  t3<- ggplot(earlyTest, aes(x=value, y=seven*7.29, color= value)) + geom_boxplot() + labs(title="Late" )+ theme_classic() +theme(plot.title = element_text(margin = margin(t = 10, b = -30))) +theme(plot.title = element_text(hjust = 0.5))+   theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+theme(axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank(), axis.line.y = element_line(colour="grey40", linetype = "dashed"))+
+    scale_x_discrete(labels=labs) + theme(axis.text.x = element_text(angle = 75)) +# geom_jitter(width=.3)+
+    stat_summary(fun.y = "mean", geom = "point", shape = 8, size = 2)
+  
+  figure <- ggarrange(t1,t2,t3, common.legend=T, legend="none", ncol=3) 
+  
+  comp <- annotate_figure(figure,  top = text_grob(paste("Highest Severity Fires Occurrence", "(Seed RND)"), color = "Black", face = "bold", size = 14),
+                          bottom = text_grob("Scenarios", color = "Black", face = "bold", size = 12),
+                          left = text_grob("Area affected by highest severity fire (ha)", color = "Black",face = "bold", rot = 90,size = 12))
+  comp
+  
+  
+  
+  # scatter plot of fire severites
+  nms <- subset(meltSeverity, grepl("not",meltSeverity$value, ignore.case = T ))
+  head(nms)
+  nms[,7] <- NULL
+  colnames(nms)[7]<- "sim"
+  nms1<- melt(nms , id=c("Time","sim"))
+  head(nms1)
+       
+  library(scales)
+
+       
+  ggplot(nms1, aes(x= Time , y=value*7.29 , color= variable)) + geom_point() +geom_smooth(level=.9) + facet_wrap(~sim) + theme_classic()+ 
+    labs(y="Area affected by different severity fires (ha)", x="Time (years)", title= "Fire severity distributions across simulations", color="Severity levels")+
+    scale_color_manual(labels = c("1", "2","3", "4", "5"), values=  hue_pal()(5)) + guides(color=guide_legend(override.aes=list(fill=NA)))
+    
+  
   
   

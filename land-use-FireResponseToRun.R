@@ -54,10 +54,11 @@ slopePath<- paste0("clippedRaster/slopeClip16S.img")
 developPath <- paste0("clippedRaster/land-use/develop16S.img") #https://gis1.usgs.gov/csas/gap/viewer/land_cover/Map.aspx 
 severityPath <- file.path("fire", paste0("severity-",timestep,".img"))
 fuelPath <- file.path("fire", "fuels", paste0("FuelType-", timestep, ".img"))
-timePath <- file.path("DFFS-output", paste0("TimeOfLastFire-",timestep, ".img"))
+#timePath <- file.path("DFFS-output", paste0("TimeOfLastFire-",timestep, ".img")) # not used 
 cutHistoryPath <- paste0("land-use-maps/cutHistory.img")
 severityHistoryPath <- paste0("logs/severityHistory.img")
 dataPerTimeStepPath <- paste0("logs/trendsPerTimeStep.csv")
+fsCutPath <- file.path("clippedRaster", "fireBreaksFS.img")
 
 #read in rasters 
 luMaster <- raster(landUseMasterPath)
@@ -65,7 +66,7 @@ slopeRaster <- raster(slopePath)
 developRaster <- raster(developPath)
 severityRaster <- raster(severityPath)
 fuelRaster <- raster(fuelPath)
-timeRaster <- raster(timePath)
+#timeRaster <- raster(timePath) # not used 
 
 #create or read in history rasters  
 if (timestep==1)# generate new cutHistory 
@@ -88,7 +89,7 @@ if (timestep==1)# generate new cutHistory
 print("Rasters Read!")
 
 ONLYFIREBREAK <-F # if TRUE it skips over the proximity to development and salvage cutting. 
-PERMANENTFSFIREBREAKS <- F # if TRUE this forces FS land to use the same  fire break cuts
+PERMANENTFSFIREBREAKS <- T # if TRUE this forces FS land to use the same  fire break cuts
 # end of setup. 
 
 
@@ -104,13 +105,10 @@ privateLimit <- floor(maxCutCells* 0.3233224) # (14464+5836+4)/(14464+5836+4 +30
 
 # we can grab the unforested areas from the fuels and delete them later
 #unforested areas are 1 , out of bounds areas are 0 
-setupRaster <- fuelRaster
-suR <- values(setupRaster)
-
 outOfSquareCells <- which(is.na(values(luMaster)))  # out of square cells 
-outOfBoundsCells <- which(suR ==0) # inactive sites and out of square cells 
+outOfBoundsCells <- which(values(fuelRaster) ==0) # inactive sites and out of square cells 
 inSquareInactiveCells <- (setdiff(outOfBoundsCells, outOfSquareCells )) # insquare cells that are inactive 
-unforestedCells <- which(suR == 1) # un forested cells 
+unforestedCells <- which(values(fuelRaster) == 1) # un forested cells 
 wildernessCells <- which(values(luMaster)== 1111) # | values == 111 # both values are wilderness area cells (111 is only 4 cells though) 
 
 
@@ -251,6 +249,8 @@ if (PERMANENTFSFIREBREAKS)
 {
   if (timestep == 1 || sample(1:100, 1) == timestep){ # store the cuts on the first time step or if there was a stange incident (1% chance). 
     permanentFuelBeaks <- which(values(dR) == 156)
+    
+    fsCutRaster <- raster(fsCutPath)
     
     #this would be used to store the cuts (that would be in FS)
     cat(permanentFuelBeaks, file="land-use-maps/permanentFSCuts.txt", sep=", ", append=T) # file =""
