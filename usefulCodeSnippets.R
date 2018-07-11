@@ -7,7 +7,7 @@
 ## Section ploting with pauses ---- 
 sim <- function(path, n=100, pause=0.25) {
   for (i in 1:n) {
-    x<- raster(paste0(path1,i,".img"))
+    x<- raster(paste0(path,i,".img"))
     plot(x, legend=T, asp=NA, main=i)
     dev.flush()
     Sys.sleep(pause)
@@ -17,8 +17,8 @@ sim <- function(path, n=100, pause=0.25) {
 
 
 setwd("C:/Users/hfintern/Desktop/Klamath_ForestXSiskiyouCounty/Saved Output/PnET+Fire+Fuel+NoClimate 50Years/")
-setwd("C:/Users/hfintern/Desktop/Klamath_ForestXSiskiyouCounty/")
-sim(path = "fire/fuels/FuelType-", n=50, pause=1.5)
+setwd("C:/Users/hfintern/Desktop/Klamath_ForestXSiskiyouCounty/7-10 test/land-use-maps/")
+sim(path = "land-use-", n=91, pause=1)
 
 
 ###########################################################

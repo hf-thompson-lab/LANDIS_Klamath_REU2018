@@ -13,19 +13,20 @@
 
 # rules:  
 # 30 percent slope is the max for mechanical thinning - uplands
-# right now greater than 54 degree slope will not be cut. 
+# right now greater than 60 degree slope will not be cut. 
 
 # mechanical treatments would be used to prevent fire from entering land near developed area. 
 # cuts are assumed to last 15 years and after 15 years the area is eligible to cut again
 # cut limit per year is 4% of total active cells - this is then divided between FS and private cut limits 
-# in a bad year the FS be able to cut an extra 50 to 200 cells #not implemented yet 
 
 # land around developed area will be cut if there is enough fire within 415.53ha circle of the development (not sure on the size)
-#                               (9X9 cell search for areas around development that >=40.35% [23/57] of the cells have fire on them) 
+#                               (9X9 cell search for areas around development that >=50.87% [29/57] of the cells have fire on them) 
 
 # post fire salvage logging in areas that were not completely destroyed (I am unsure of the quantity of this cutting - might need to turn it down)
 
 # fuel breaks implemented to clear cut in order to divide large groups of connect fuel types. 
+# FS owned land uses planned fuel breaks that follow the low elevations contour. 
+    # these consist of 3 lines that cut every 10 years  
 
 # Section - start setup ----
 start_time <- Sys.time()
@@ -38,7 +39,8 @@ library(rgdal)
 library(rgeos)
 
 #set working directory
-workingDirectoryPath <- "C:/Users/hfintern/Desktop/Klamath_ForestXSiskiyouCounty"
+workingDirectoryPath <- "C:/Users/hfintern/Desktop/Klamath_ForestXSiskiyouCounty" 
+# TODO change to be relative path ==== 
 setwd(workingDirectoryPath)
 print(getwd())
 linesLog <- c(linesLog, getwd())
@@ -48,16 +50,16 @@ timestep <- readLines( "lockfile",n = 1)
 timestep <- as.numeric(timestep)
 
 #set up paths 
-luOutputPath <- paste0("land-use-maps/land-use-", timestep, ".img")
-landUseMasterPath <- "land-use-maps/combindLandUseRaster-master.img"
-slopePath<- paste0("clippedRaster/slopeClip16S.img")
-developPath <- paste0("clippedRaster/land-use/develop16S.img") #https://gis1.usgs.gov/csas/gap/viewer/land_cover/Map.aspx 
+luOutputPath <- paste0(file.path("land-use-maps","land-use-"), timestep, ".img")
+landUseMasterPath <- file.path("clippedRaster","land-use","combindLandUseRaster-master.img")
+slopePath<- file.path("clippedRaster","slopeClip16S.img")
+developPath <- file.path("clippedRaster","land-use/develop16S.img") #https://gis1.usgs.gov/csas/gap/viewer/land_cover/Map.aspx 
 severityPath <- file.path("fire", paste0("severity-",timestep,".img"))
 fuelPath <- file.path("fire", "fuels", paste0("FuelType-", timestep, ".img"))
 #timePath <- file.path("DFFS-output", paste0("TimeOfLastFire-",timestep, ".img")) # not used 
-cutHistoryPath <- paste0("land-use-maps/cutHistory.img")
-severityHistoryPath <- paste0("logs/severityHistory.img")
-dataPerTimeStepPath <- paste0("logs/trendsPerTimeStep.csv")
+cutHistoryPath <- file.path("land-use-maps","cutHistory.img")
+severityHistoryPath <- file.path("logs","severityHistory.img")
+dataPerTimeStepPath <- file.path("logs","trendsPerTimeStep.csv")
 fsCutPath <- file.path("clippedRaster", "fireBreaksFS.img")
 
 #read in rasters 
@@ -71,15 +73,22 @@ fuelRaster <- raster(fuelPath)
 #create or read in history rasters  
 if (timestep==1)# generate new cutHistory 
 {
+  if (!dir.exists("logs")) {dir.create(file.path("logs"))}  # create the logs directory if it isnt there
+  if (!dir.exists("land-use-maps")) {dir.create(file.path("land-use-maps"))}  # create the land-use-maps directory if it isnt there
+  
   cutHistory <- luMaster
   values(cutHistory)[!(is.na(values(luMaster) ))] <- -1
   
   severityHistory <- luMaster
   values(severityHistory)[!(is.na(values(luMaster) ))] <- -1
-  
+
   #overwrite log file and trendsperTimeStep file 
-  write(" ", paste0("logs/logfile",".txt"), append=F)
+  write(" ", file.path("logs","logfile.txt"), append=F)
   write.table( data.frame(TimeStep= numeric() , CellsCut = numeric(),FSCuts= numeric(), PrivateCuts= numeric(), CutsNearDevelopment = numeric()  , CutsForPostFireSalvage = numeric(), rejectedProximityCuts=numeric(), rejectedSalvageCuts= numeric(), CellsWithFire=numeric()) ,  file=dataPerTimeStepPath ,  append = F,  sep=',',  row.names=F,  col.names=T )
+  
+  #erase previous tabu logs
+  write.csv(data.frame(colEq=numeric(0), rowEq=numeric(0), step=numeric(0), id=numeric(0)), file.path("logs","tabuList.csv"), row.names = F, quote = F)
+  
 }else #read in cutHistory  
 {
   cutHistory <- raster(cutHistoryPath)
@@ -148,17 +157,22 @@ if (!ONLYFIREBREAK){
   }
   neighborhoodMatrix <- nm
   
-  sumTable <- data.frame(cell=numeric(length(cells)), mean=numeric(length(cells)), median=numeric(length(cells)), count=numeric(length(cells)) )
+  #sumTable <- data.frame(cell=numeric(length(cells)), mean=numeric(length(cells)), median=numeric(length(cells)), count=numeric(length(cells)) )
+  sumTable <- data.frame(cell=numeric(length(cells)), count=numeric(length(cells)) )
   sV <- values(severityRaster)
   for (i in 1:length(cells)) # this could be sped up 
   {
     adj <- adjacent(developRaster, cells[i], directions=neighborhoodMatrix, pairs=F, target=NULL, sorted=T,  include=FALSE, id=T)
-    sumTable[i,]<-c(cells[i], mean(sV[adj], na.rm=T), median(sV[adj], na.rm = T), sum(sV[adj] > 2))
+    #sumTable[i,]<-c(cells[i], mean(sV[adj], na.rm=T), median(sV[adj], na.rm = T), sum(sV[adj] > 2))
+    sumTable[i,]<-c(cells[i], sum(sV[adj] > 2))
   }
-  sumTable <- sumTable[order(-sumTable$mean),]
+  #sumTable <- sumTable[order(-sumTable$mean),]
+  sumTable <- sumTable[order(-sumTable$count),]
   
-  #where 2 is the mean and median and 23/57 cells need fire as thresholds for cutting.  
-  proximityToDevelopmentCells <- adjacent(developRaster, sumTable$cell[sumTable$mean>2 | sumTable$median>2 | sumTable$count >= 23], directions=neighborhoodMatrix, pairs=F, target=NULL, sorted=T,  include=FALSE, id=T)
+  #where 5 is the mean and median and 29/57 cells need fire as thresholds for cutting.  
+  #proximityToDevelopmentCells <- adjacent(developRaster, sumTable$cell[sumTable$mean>4 | sumTable$median>4 | sumTable$count >= 29], directions=neighborhoodMatrix, pairs=F, target=NULL, sorted=T,  include=FALSE, id=T)
+  proximityToDevelopmentCells <- adjacent(developRaster, sumTable$cell[ sumTable$count >= 29], directions=neighborhoodMatrix, pairs=F, target=NULL, sorted=T,  include=FALSE, id=T)
+
   print(paste(length(proximityToDevelopmentCells), "cells identified because of fire that is near developed cells"))
   
   linesLog <- c(linesLog, paste(length(proximityToDevelopmentCells), "cells identified because of fire that is near developed cells"))
@@ -203,14 +217,23 @@ if (!ONLYFIREBREAK){
   
   # Section - get fuel break cuts ---- 
   
-  if (timestep%%5 ==0){
+  #if (timestep%%3 ==0){
     source("FindFuelBreaks.R")
-    fuelBreaks <- findFuelBreaks(fuelRaster, fuelValsToConsider= (c(1:6,10,11)+1), minCellsConnect=35, numFuelsToSplit=8, numOfLargestFuelsToPickFrom=15)
+    
+    #slim down the size of so that we are only planning fuel breaks on the private side of the land
+    tempFuelRas <- fuelRaster
+    vals <- values(tempFuelRas)
+    matVals <- matrix(vals, nrow=310, ncol=312)
+    matVals[1:135,]<- 0 #135 is about where there forest service land stops and and the private land begins in the land use map. 
+    values(tempFuelRas)<- as.vector(matVals)
+
+    fuelBreaks <- findFuelBreaks(tempFuelRas, fuelValsToConsider= (c(1:6,10,11)+1), minCellsConnect=35, numFuelsToSplit=4, numOfLargestFuelsToPickFrom=12)
     values(dR)[which(!is.na(values(fuelBreaks)))] <- 155
-  }
+  #}
   
   
 }else{#ONLYFIREBREAKS 
+  #this else block has not be adjusted for the 91 year runs.... 
   if (timestep%%5 ==0){
     source("FindFuelBreaks.R")
     fuelBreaks <- findFuelBreaks(fuelRaster, fuelValsToConsider= (c(1:6,10,11)+1), minCellsConnect=35, numFuelsToSplit=8, numOfLargestFuelsToPickFrom=15)
@@ -285,6 +308,7 @@ if(length(FS) > fsLimit)
 
 # Section - output extra logs, output plots, write land-use raster ---- 
 #stores cut history 
+cellsCut <- which(values(dR)>1)
 values(cutHistory)[cellsCut] <- timestep
 values(severityHistory)[which(values(severityRaster)>2)] <- timestep  #might want to only record higher severity fires 
 
