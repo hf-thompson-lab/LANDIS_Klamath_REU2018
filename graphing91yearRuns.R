@@ -174,11 +174,11 @@ earlyTest <- subset(meltdf, grepl(3333,meltdf$value, ignore.case = T ) & meltdf$
 t1<- ggplot(earlyTest, aes(x=value, y=MeanSeverity, color= value)) + geom_boxplot() + ylim(c(3,5)) + labs(title="Early" )+ theme_bw() +theme(plot.title = element_text(margin = margin(t = 10, b = -30)))+theme(plot.title = element_text(hjust = 0.5))+ theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())
 
 midTest <- subset(meltdf, grepl(3333,meltdf$value, ignore.case = T ) & meltdf$Time %in% 31:60)
-t2<- ggplot(earlyTest, aes(x=value, y=MeanSeverity, color= value)) + geom_boxplot()+ ylim(c(3,5))+ labs(title="Middle" ) + theme_bw() +theme(plot.title = element_text(margin = margin(t = 10, b = -30)))+theme(plot.title = element_text(hjust = 0.5))+  theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+theme(axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank(), axis.line.y = element_line(colour="grey40", linetype = "dashed"))
+t2<- ggplot(midTest, aes(x=value, y=MeanSeverity, color= value)) + geom_boxplot()+ ylim(c(3,5))+ labs(title="Middle" ) + theme_bw() +theme(plot.title = element_text(margin = margin(t = 10, b = -30)))+theme(plot.title = element_text(hjust = 0.5))+  theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+theme(axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank(), axis.line.y = element_line(colour="grey40", linetype = "dashed"))
 
 
 lateTest <- subset(meltdf, grepl(3333,meltdf$value, ignore.case = T ) & meltdf$Time %in% 61:91)
-t3<- ggplot(earlyTest, aes(x=value, y=MeanSeverity, color= value)) + geom_boxplot()+ ylim(c(3,5)) + labs(title="Late" )+ theme_bw() +theme(plot.title = element_text(margin = margin(t = 10, b = -30))) +theme(plot.title = element_text(hjust = 0.5))+   theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+theme(axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank(), axis.line.y = element_line(colour="grey40", linetype = "dashed"))
+t3<- ggplot(lateTest, aes(x=value, y=MeanSeverity, color= value)) + geom_boxplot()+ ylim(c(3,5)) + labs(title="Late" )+ theme_bw() +theme(plot.title = element_text(margin = margin(t = 10, b = -30))) +theme(plot.title = element_text(hjust = 0.5))+   theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+theme(axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank(), axis.line.y = element_line(colour="grey40", linetype = "dashed"))
 
 figure <- ggarrange(t1,t2,t3, common.legend=T, legend="bottom", ncol=3) 
 
@@ -197,12 +197,12 @@ labs <- c("A2 scenario", "A2 scenario & LU+", "Recent Trends", "Recent Trends & 
 
                 
   midTest <- subset(meltdf, grepl(3333,meltdf$value, ignore.case = T ) & meltdf$Time %in% 31:60)
-  t2<- ggplot(earlyTest, aes(x=value, y=TotalSites*7.29, color= value)) + geom_boxplot()+ labs(title="Middle" ) + theme_bw() +theme(plot.title = element_text(margin = margin(t = 10, b = -30)))+theme(plot.title = element_text(hjust = 0.5))+ theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+theme(axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank(), axis.line.y = element_line(colour="grey40", linetype = "dashed"))+
+  t2<- ggplot(midTest, aes(x=value, y=TotalSites*7.29, color= value)) + geom_boxplot()+ labs(title="Middle" ) + theme_bw() +theme(plot.title = element_text(margin = margin(t = 10, b = -30)))+theme(plot.title = element_text(hjust = 0.5))+ theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+theme(axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank(), axis.line.y = element_line(colour="grey40", linetype = "dashed"))+
               scale_x_discrete(labels=labs) + theme(axis.text.x = element_text(angle = 75))
   
   
   lateTest <- subset(meltdf, grepl(3333,meltdf$value, ignore.case = T ) & meltdf$Time %in% 61:91)
-  t3<- ggplot(earlyTest, aes(x=value, y=TotalSites*7.29, color= value)) + geom_boxplot() + labs(title="Late" )+ theme_bw() +theme(plot.title = element_text(margin = margin(t = 10, b = -30))) +theme(plot.title = element_text(hjust = 0.5))+ theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+theme(axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank(), axis.line.y = element_line(colour="grey40", linetype = "dashed"))+
+  t3<- ggplot(lateTest, aes(x=value, y=TotalSites*7.29, color= value)) + geom_boxplot() + labs(title="Late" )+ theme_bw() +theme(plot.title = element_text(margin = margin(t = 10, b = -30))) +theme(plot.title = element_text(hjust = 0.5))+ theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+theme(axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank(), axis.line.y = element_line(colour="grey40", linetype = "dashed"))+
              scale_x_discrete(labels=labs) + theme(axis.text.x = element_text(angle = 75))
   
   figure <- ggarrange(t1,t2,t3, common.legend=T, legend="none", ncol=3) 
@@ -224,13 +224,13 @@ labs <- c("A2 scenario", "A2 scenario & LU+", "Recent Trends", "Recent Trends & 
   
   
   midTest <- subset(meltdf, grepl(3333,meltdf$value, ignore.case = T ) & meltdf$Time %in% 31:60)
-  t2<- ggplot(earlyTest, aes(x=value, y=CohortsKilled, color= value)) + geom_boxplot()+ labs(title="Middle" ) + theme_bw() +theme(plot.title = element_text(margin = margin(t = 10, b = -30)))+theme(plot.title = element_text(hjust = 0.5))+  theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+theme(axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank(), axis.line.y = element_line(colour="grey40", linetype = "dashed"))+
+  t2<- ggplot(midTest, aes(x=value, y=CohortsKilled, color= value)) + geom_boxplot()+ labs(title="Middle" ) + theme_bw() +theme(plot.title = element_text(margin = margin(t = 10, b = -30)))+theme(plot.title = element_text(hjust = 0.5))+  theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+theme(axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank(), axis.line.y = element_line(colour="grey40", linetype = "dashed"))+
     scale_x_discrete(labels=labs) + theme(axis.text.x = element_text(angle = 75))+# geom_jitter(width=.3)+
     stat_summary(fun.y = "mean", geom = "point", shape = 8, size = 2)
   
   
   lateTest <- subset(meltdf, grepl(3333,meltdf$value, ignore.case = T ) & meltdf$Time %in% 61:91)
-  t3<- ggplot(earlyTest, aes(x=value, y=CohortsKilled, color= value)) + geom_boxplot() + labs(title="Late" )+ theme_bw() +theme(plot.title = element_text(margin = margin(t = 10, b = -30))) +theme(plot.title = element_text(hjust = 0.5))+   theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+theme(axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank(), axis.line.y = element_line(colour="grey40", linetype = "dashed"))+
+  t3<- ggplot(lateTest, aes(x=value, y=CohortsKilled, color= value)) + geom_boxplot() + labs(title="Late" )+ theme_bw() +theme(plot.title = element_text(margin = margin(t = 10, b = -30))) +theme(plot.title = element_text(hjust = 0.5))+   theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+theme(axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank(), axis.line.y = element_line(colour="grey40", linetype = "dashed"))+
     scale_x_discrete(labels=labs) + theme(axis.text.x = element_text(angle = 75)) +# geom_jitter(width=.3)+
     stat_summary(fun.y = "mean", geom = "point", shape = 8, size = 2)
   
@@ -252,13 +252,13 @@ labs <- c("A2 scenario", "A2 scenario & LU+", "Recent Trends", "Recent Trends & 
   
   
   midTest <- subset(meltdf, grepl(3333,meltdf$value, ignore.case = T ) & meltdf$Time %in% 31:60)
-  t2<- ggplot(earlyTest, aes(x=value, y=MeanSeverity, color= value)) + geom_boxplot()+ labs(title="Middle" ) + theme_bw() +theme(plot.title = element_text(margin = margin(t = 10, b = -30)))+theme(plot.title = element_text(hjust = 0.5))+  theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+theme(axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank(), axis.line.y = element_line(colour="grey40", linetype = "dashed"))+
+  t2<- ggplot(midTest, aes(x=value, y=MeanSeverity, color= value)) + geom_boxplot()+ labs(title="Middle" ) + theme_bw() +theme(plot.title = element_text(margin = margin(t = 10, b = -30)))+theme(plot.title = element_text(hjust = 0.5))+  theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+theme(axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank(), axis.line.y = element_line(colour="grey40", linetype = "dashed"))+
     scale_x_discrete(labels=labs) + theme(axis.text.x = element_text(angle = 75))+# geom_jitter(width=.3)+
     stat_summary(fun.y = "mean", geom = "point", shape = 8, size = 2) + ylim(c(3.5,4.75))
   
   
   lateTest <- subset(meltdf, grepl(3333,meltdf$value, ignore.case = T ) & meltdf$Time %in% 61:91)
-  t3<- ggplot(earlyTest, aes(x=value, y=MeanSeverity, color= value)) + geom_boxplot() + labs(title="Late" )+ theme_bw() +theme(plot.title = element_text(margin = margin(t = 10, b = -30))) +theme(plot.title = element_text(hjust = 0.5))+   theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+theme(axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank(), axis.line.y = element_line(colour="grey40", linetype = "dashed"))+
+  t3<- ggplot(lateTest, aes(x=value, y=MeanSeverity, color= value)) + geom_boxplot() + labs(title="Late" )+ theme_bw() +theme(plot.title = element_text(margin = margin(t = 10, b = -30))) +theme(plot.title = element_text(hjust = 0.5))+   theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+theme(axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank(), axis.line.y = element_line(colour="grey40", linetype = "dashed"))+
     scale_x_discrete(labels=labs) + theme(axis.text.x = element_text(angle = 75)) +# geom_jitter(width=.3)+
     stat_summary(fun.y = "mean", geom = "point", shape = 8, size = 2)+ ylim(c(3.5,4.75))
   
@@ -311,13 +311,13 @@ labs <- c("A2 scenario", "A2 scenario & LU+", "Recent Trends", "Recent Trends & 
   
   
   midTest <- subset(meltSeverity, grepl("not",meltSeverity$value, ignore.case = T ) & meltSeverity$Time %in% 31:60)
-  t2<- ggplot(earlyTest, aes(x=value, y=seven*7.29, color= value)) + geom_boxplot()+ labs(title="Middle" ) + theme_bw() +theme(plot.title = element_text(margin = margin(t = 10, b = -30)))+theme(plot.title = element_text(hjust = 0.5))+  theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+theme(axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank(), axis.line.y = element_line(colour="grey40", linetype = "dashed"))+
+  t2<- ggplot(midTest, aes(x=value, y=seven*7.29, color= value)) + geom_boxplot()+ labs(title="Middle" ) + theme_bw() +theme(plot.title = element_text(margin = margin(t = 10, b = -30)))+theme(plot.title = element_text(hjust = 0.5))+  theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+theme(axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank(), axis.line.y = element_line(colour="grey40", linetype = "dashed"))+
     scale_x_discrete(labels=labs) + theme(axis.text.x = element_text(angle = 75))+# geom_jitter(width=.3)+
     stat_summary(fun.y = "mean", geom = "point", shape = 8, size = 2) 
   
   
   lateTest <- subset(meltSeverity, grepl("not",meltSeverity$value, ignore.case = T ) & meltSeverity$Time %in% 61:91)
-  t3<- ggplot(earlyTest, aes(x=value, y=seven*7.29, color= value)) + geom_boxplot() + labs(title="Late" )+ theme_bw() +theme(plot.title = element_text(margin = margin(t = 10, b = -30))) +theme(plot.title = element_text(hjust = 0.5))+   theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+theme(axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank(), axis.line.y = element_line(colour="grey40", linetype = "dashed"))+
+  t3<- ggplot(lateTest, aes(x=value, y=seven*7.29, color= value)) + geom_boxplot() + labs(title="Late" )+ theme_bw() +theme(plot.title = element_text(margin = margin(t = 10, b = -30))) +theme(plot.title = element_text(hjust = 0.5))+   theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+theme(axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank(), axis.line.y = element_line(colour="grey40", linetype = "dashed"))+
     scale_x_discrete(labels=labs) + theme(axis.text.x = element_text(angle = 75)) +# geom_jitter(width=.3)+
     stat_summary(fun.y = "mean", geom = "point", shape = 8, size = 2)
   
@@ -415,5 +415,95 @@ labs <- c("A2 scenario", "A2 scenario & LU+", "Recent Trends", "Recent Trends & 
   subBioMelt<- subset(bioMelt, grepl("3333",bioMelt$sim, ignore.case = T ))
   ggplot(subBioMelt, aes(x=Time, y=value, color=variable, linetype=sim)) +geom_smooth()+ theme_bw() + #facet_grid(~sim)+
     labs(y="Biomass (g/m2)", x="Time (years)", title= "Biomass over time", color="Species")+guides(legend.position="bottom")
+  
+  
+  ## plotting climate data 
+  
+  # Section - plot climate data ----- 
+  
+  library(ggplot2)
+  library(reshape2)
+  library(gridExtra)
+  
+  climate.list<- c("climate_A2_scenario_convertedPAR_secondredo","climate_noClimateChange_scenario_convertedPAR_secondredo")
+  
+  climate.data <- list()
+  climate.data<- lapply (climate.list, function (clim){
+ 
+  setwd("C:/Users/hfintern/Desktop/Klamath_ForestXSiskiyouCounty/climate_scenerios_klamath_all_eco_regions")
+  setwd(clim)
+  
+  climateFiles <- list.files(pattern = "PnET.txt", full.names = T)
+  climateFiles
+  
+  tab <-  read.table(file = climateFiles[1], header =T,stringsAsFactors = FALSE) 
+  endtab<-cbind(tab, EcoReg= rep(substr(climateFiles[1], 3,7), length(tab$Year)) )
+  
+  for (i in 2:length(climateFiles))
+  {
+    tab <-  read.table(file = climateFiles[i], header =T,stringsAsFactors = FALSE)
+    tab1<-cbind(tab, EcoReg= rep(substr(climateFiles[i], 3,7), length(tab$Year)) )
+    endtab<-rbind(endtab, tab1)
+  }
+  
+  levels(endtab$Year)
+  endtab$Year[endtab$Year=="1200-1948"] <- 1948  
+  
+  decimalYear <- as.double(endtab$Year )+ as.double(endtab$Month)/12.0 
+  endtab <- cbind(endtab, decimalYear)
+  endtab <- cbind(endtab, climate = rep(clim, NROW(decimalYear)))
+  
+  head(endtab)
+
+  return(endtab)
+  })
+  
+  mergedClimData <- do.call(rbind, climate.data)
+  
+  meltedCD <- melt(mergedClimData, id.vars =c("Year", "Month", "decimalYear", "EcoReg", "CO2", "PAR", "O3","Prec","climate"))#,"Tmax", "Tmin")) # "Tmax", "Tmin", "PAR", "Prec", "CO2"))
+  
+  
+  #head(meltedCD)
+  
+  #ggplot(data =meltedCD, aes(x=decimalYear , y=Prec  , color=climate)) + geom_point()+ facet_wrap(~EcoReg ) + labs(title ="A2 Scenario")
+  
+  meltedCD$Prec <- meltedCD$Prec/10 # mm to cm
+  
+  earlyTest <- subset(meltedCD, meltedCD$Year  %in% 2010:2040)
+  t1<- ggplot(earlyTest, aes(x=Month, y=Prec, color=climate)) + geom_smooth() + labs(title="Early" )+ theme_bw() +theme(plot.title = element_text(margin = margin(t = 10, b = -30)))+theme(plot.title = element_text(hjust = 0.5))
+  
+  midTest <- subset(meltedCD,  meltedCD$Year  %in% 2041:2070)
+  t2<- ggplot(midTest, aes(x=Month, y=Prec,color=climate))  + geom_smooth()+ labs(title="Middle" ) + theme_bw() +theme(plot.title = element_text(margin = margin(t = 10, b = -30)))+theme(plot.title = element_text(hjust = 0.5))
+  
+  lateTest <- subset(meltedCD, meltedCD$Year  %in% 2071:2101)
+  t3<- ggplot(lateTest, aes(x=Month, y=Prec,color=climate))  + geom_smooth() + labs(title="Late" )+ theme_bw() +theme(plot.title = element_text(margin = margin(t = 10, b = -30))) +theme(plot.title = element_text(hjust = 0.5))
+  
+  figure <- ggarrange(t1,t2,t3, common.legend=T, legend="bottom", ncol=3) 
+  
+  comp <- annotate_figure(figure,  top = text_grob(paste("Precipation"), color = "Black", face = "bold", size = 14),
+                          bottom = text_grob("Months", color = "Black", face = "bold", size = 12),
+                          left = text_grob("Precipation (cm)", color = "Black",face = "bold", rot = 90,size = 12))
+  comp
+  
+  
+  earlyTest <- subset(meltedCD, meltedCD$Year  %in% 2010:2040)
+  t1<- ggplot(earlyTest, aes(x=Month, y=value, color=variable, linetype=climate)) + geom_smooth() + labs(title="Early" )+ theme_bw() +theme(plot.title = element_text(margin = margin(t = 10, b = -5)))+theme(plot.title = element_text(hjust = 0.5))+ 
+    coord_cartesian(ylim=c(-3, 32))
+  
+  midTest <- subset(meltedCD,  meltedCD$Year  %in% 2041:2070)
+  t2<- ggplot(midTest, aes(x=Month, y=value,color=variable, linetype=climate))  + geom_smooth()+ labs(title="Middle" ) + theme_bw() +theme(plot.title = element_text(margin = margin(t = 10, b = -5)))+theme(plot.title = element_text(hjust = 0.5))+ 
+    coord_cartesian(ylim=c(-3, 32))
+  
+  lateTest <- subset(meltedCD, meltedCD$Year  %in% 2071:2101)
+  t3<- ggplot(lateTest, aes(x=Month, y=value,color=variable, linetype=climate))  + geom_smooth() + labs(title="Late" )+ theme_bw() +theme(plot.title = element_text(margin = margin(t = 10, b = -5))) +theme(plot.title = element_text(hjust = 0.5))+ 
+    coord_cartesian(ylim=c(-3, 32))
+  
+  figure <- ggarrange(t1,t2,t3, common.legend=T, legend="bottom", ncol=3) 
+  
+
+  comp <- annotate_figure(figure,  top = text_grob("Temperature", color = "Black", face = "bold", size = 14),
+                          bottom = text_grob("Month", color = "Black", face = "bold", size = 12),
+                          left = text_grob("Temperature (°C)", color = "Black",face = "bold", rot = 90,size = 12))
+  comp
   
   
