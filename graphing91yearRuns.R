@@ -4,7 +4,7 @@ library(reshape2)
 library(raster)
 
 library(scales)
-scenarioPath <- "D:/Evan/91 Year Runs Output"
+scenarioPath <- "C:/Users/hfintern/Desktop/sa3_Scenarios"
 
 sims <- list.dirs(scenarioPath, recursive = F, full.names = F)
 
@@ -12,17 +12,17 @@ sims
 
 ## making and plot mean fire return intervals ---- 
 
-mask.active.cells <- raster('C:/Users/hfintern/Desktop/Klamath_ForestXSiskiyouCounty/clippedRaster/mask_activeCells.img')
+mask.active.cells <- raster('C:/Users/hfintern/Desktop/masksa3.img')
 simus.selection <- sims # 7-2-18 PnET+FIRE+FUEL+DevCUT+FBreak 50 a2 scenario
 
 rasters <- lapply (simus.selection, function (sim){
-  general.root.path <- "D:/Evan/91 Year Runs Output"#"C:/Users/hfintern/Desktop/Klamath_ForestXSiskiyouCounty/Saved Output"
+  general.root.path <- "C:/Users/hfintern/Desktop/sa3_Scenarios"#"C:/Users/hfintern/Desktop/Klamath_ForestXSiskiyouCounty/Saved Output"
   
   setwd(general.root.path)
   setwd(sim)
   
   if (length(list.files(path = './fire')) ==0) { return(NULL) }
-  ras.list <- paste0('fire/severity-',1:91,'.img') 
+  ras.list <- paste0('fire/severity-',1:31,'.img') 
   rastack  <- stack (ras.list)
   
   rastack <- reclassify(rastack,rcl = matrix (ncol = 3,byrow=T,data =c(-1,2.5,0,2.6,20,1)))
@@ -41,9 +41,9 @@ rasters <- lapply (simus.selection, function (sim){
 })
 
 
-s <- stack(rasters[[3]],rasters[[5]],rasters[[9]],rasters[[11]])
+s <- stack(rasters[[1]],rasters[[2]],rasters[[3]],rasters[[4]])
 sp<- as(s, 'SpatialGridDataFrame')
-seededplots<- spplot(sp, names.attr= simus.selection[c(3, 5, 9, 11)], main = "Mean Fire Return Interval (Years) SEED=3333",
+seededplots<- spplot(sp, names.attr= simus.selection[c(1, 2, 3, 4)], main = "Mean Fire Return Interval (Years) SEED=3333",
                      colorkey=list(height =.75, at=c(seq(10, 20, 5), seq(20, 50, 10),70, 100)), labels=c(seq(10, 20, 5) ,seq(20, 50, 10),70, 100) , col.regions = colorRampPalette(c("red", "orange", "yellow","green","darkgreen") ) )
 plot(seededplots)
 
@@ -76,14 +76,14 @@ plot(plots2)
 
 # ploting AGB for each simulation ---- 
 
-constrainPlot <- function(plot, xlim= c(0,91), ylim){
+constrainPlot <- function(plot, xlim= c(0,31), ylim){
   cp <- plot + scale_x_continuous(limits = xlim) + scale_y_continuous(limits= ylim)
   return(cp)
 }
 
 graphs <- list()
 graphs <- lapply (simus.selection, function (sim){
-  general.root.path <- "D:/Evan/91 Year Runs Output"
+  general.root.path <- "C:/Users/hfintern/Desktop/sa3_Scenarios"
   
   setwd(general.root.path)
   setwd(sim)
@@ -94,7 +94,7 @@ graphs <- lapply (simus.selection, function (sim){
   meltagb <- melt(agb, id = "Time") 
   
   p1<- ggplot(meltagb , aes(x= Time, y= value, color=variable)) +geom_smooth() + labs(title="Change in AGB over time ", subtitle= sim, y="AGB in g/m2") + theme_bw()
-  p1 <- constrainPlot(p1, ylim = c(0,6000))
+  p1 <- constrainPlot(p1, ylim = c(0,7000))
   return(p1)
 })
 
@@ -116,20 +116,20 @@ ggarrange(graphs[[2]],graphs[[4]],graphs[[6]],graphs[[8]],graphs[[10]],graphs[[1
 
 # graphing fire stats ---- 
 dataFrames <- lapply (simus.selection, function (sim){
-  general.root.path <- "D:/Evan/91 Year Runs Output"
+  general.root.path <- "C:/Users/hfintern/Desktop/sa3_Scenarios"
   
   setwd(general.root.path)
   setwd(sim)
   if (length(list.files(path = './fire')) ==0) { return(NULL) }
   fireEventPath <- "dynamic-fire-events-log.csv"
   dfe <- read.csv(fireEventPath, header=T)
-  
-  ms <- numeric(91)
-  meds <- numeric(91)
-  mck <- numeric(91)
-  medck<- numeric(91)
-  size <- numeric(91)
-  for (i in 1:91)
+  len <- 30
+  ms <- numeric(len)
+  meds <- numeric(len)
+  mck <- numeric(len)
+  medck<- numeric(len)
+  size <- numeric(len)
+  for (i in 1:len)
   {
     ms[i] <- mean(dfe[dfe$Time==i,]$MeanSeverity)
     meds[i] <- median(dfe[dfe$Time==i,]$MeanSeverity)
@@ -139,7 +139,7 @@ dataFrames <- lapply (simus.selection, function (sim){
     
   }
   
-  df <-data.frame(Time = 1:91, MeanSeverity=ms, MedianSeverity=meds,CohortsKilled=mck, TotalSites=medck, Size= size,  SIM=rep(sim, 91))
+  df <-data.frame(Time = 1:len, MeanSeverity=ms, MedianSeverity=meds,CohortsKilled=mck, TotalSites=medck, Size= size,  SIM=rep(sim, len))
   return(df)
 })
 
@@ -147,9 +147,9 @@ completedf<- do.call( rbind, dataFrames)
 
 meltdf <- melt(completedf, id=c("Time", "MedianSeverity", "CohortsKilled", "TotalSites", "MeanSeverity", "Size" ))
 
-p4<- ggplot(subset(meltdf, grepl(3333,meltdf$value, ignore.case = T )), aes(x=Time, y=MeanSeverity, color= value)) + geom_smooth(level=.9) + theme_bw() +  labs(title="MeanSeverity");p4
+p4<- ggplot(meltdf, aes(x=Time, y=MeanSeverity, color= value)) + geom_smooth(level=.9) + theme_bw() +  labs(title="MeanSeverity");p4
 
-p5<- ggplot(subset(meltdf, grepl("not",meltdf$value, ignore.case = T )), aes(x=Time, y=CohortsKilled, color= value)) + geom_smooth(level=.9) + geom_jitter() + theme_bw()+  labs(title="CohortsKilled");p5
+p5<- ggplot(meltdf, aes(x=Time, y=CohortsKilled, color= value)) + geom_smooth(level=.9) + geom_jitter() + theme_bw()+  labs(title="CohortsKilled");p5
 
 
 
@@ -159,7 +159,9 @@ meltdf$Size[meltdf$Size=="-Inf"]<-0
 p7<- ggplot(meltdf, aes(x=Time, y=Size, color= value))+geom_point() + geom_smooth() + theme_bw()+  labs(title="Max fire Size");p7
 
 
-p = ggplot(subset(meltdf, grepl(3333,meltdf$value, ignore.case = T )), aes(x=Size)) + theme_bw()+
+ggplot(meltdf) + geom_histogram(aes(MeanSeverity), bins=10) + facet_wrap(~value, ncol=1) + theme_bw()
+
+p = ggplot(meltdf, aes(x=Size)) + theme_bw()+
   geom_histogram(position="identity", colour="grey40", alpha=0.2, bins = 6, breaks=c(0,1,2,3,4,5)) +  labs(title="Max recorded fire size over all years")+
   facet_grid(. ~ value);p
 
@@ -191,14 +193,17 @@ vars.toGraph <- c("MeanSeverity", "CohortsKilled", "TotalSites", "Size" )
 ## TOTAL AREA AFFECTED BY FIRES ---- 
 labs <- c("A2 scenario", "A2 scenario & LU+", "Recent Trends", "Recent Trends & LU+")
   
-  earlyTest <- subset(meltdf, grepl(3333,meltdf$value, ignore.case = T ) & meltdf$Time %in% 1:30)
+  earlyTest <- subset(meltdf,  meltdf$Time %in% 1:15)
+  midTest <- subset(meltdf, meltdf$Time %in% 16:30)
+  maxVal <- max(max(earlyTest$TotalSites*7.29), max(midTest$TotalSites*7.29))
+  
   t1<- ggplot(earlyTest, aes(x=value, y=TotalSites*7.29, color= value)) + geom_boxplot() + labs(title="Early" )+ theme_bw() +theme(plot.title = element_text(margin = margin(t = 10, b = -30)))+theme(plot.title = element_text(hjust = 0.5))+ theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank() )+ theme(axis.title.y=element_blank())+
-     scale_x_discrete(labels=labs) + theme(axis.text.x = element_text(angle = 75)) 
+     scale_x_discrete(labels=labs) + theme(axis.text.x = element_text(angle = 75)) + ylim(0, maxVal) # add in limits 
 
                 
-  midTest <- subset(meltdf, grepl(3333,meltdf$value, ignore.case = T ) & meltdf$Time %in% 31:60)
-  t2<- ggplot(midTest, aes(x=value, y=TotalSites*7.29, color= value)) + geom_boxplot()+ labs(title="Middle" ) + theme_bw() +theme(plot.title = element_text(margin = margin(t = 10, b = -30)))+theme(plot.title = element_text(hjust = 0.5))+ theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+theme(axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank(), axis.line.y = element_line(colour="grey40", linetype = "dashed"))+
-              scale_x_discrete(labels=labs) + theme(axis.text.x = element_text(angle = 75))
+
+  t2<- ggplot(midTest, aes(x=value, y=TotalSites*7.29, color= value)) + geom_boxplot()+ labs(title="Middle" ) + theme_bw() +theme(plot.title = element_text(margin = margin(t = 10, b = -30)))+theme(plot.title = element_text(hjust = 0.5))+ theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+#theme(axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank(), axis.line.y = element_line(colour="grey40", linetype = "dashed"))+
+              scale_x_discrete(labels=labs) + theme(axis.text.x = element_text(angle = 75)) +ylim(0, maxVal)
   
   
   lateTest <- subset(meltdf, grepl(3333,meltdf$value, ignore.case = T ) & meltdf$Time %in% 61:91)
@@ -419,7 +424,7 @@ labs <- c("A2 scenario", "A2 scenario & LU+", "Recent Trends", "Recent Trends & 
   
   ## plotting climate data 
   
-  # Section - plot climate data ----- 
+  # Section - plot climate data -----
   
   library(ggplot2)
   library(reshape2)
@@ -459,13 +464,48 @@ labs <- c("A2 scenario", "A2 scenario & LU+", "Recent Trends", "Recent Trends & 
   })
   
   mergedClimData <- do.call(rbind, climate.data)
-  
-  meltedCD <- melt(mergedClimData, id.vars =c("Year", "Month", "decimalYear", "EcoReg", "CO2", "PAR", "O3","Prec","climate"))#,"Tmax", "Tmin")) # "Tmax", "Tmin", "PAR", "Prec", "CO2"))
+  ecras <- raster("C:/Users/hfintern/Desktop/Klamath_ForestXSiskiyouCounty/clippedRaster/ecoregsa3.tif")
+  meltedCD <- melt(subset(mergedClimData, grepl( paste(sort(unique(values(ecras))), collapse='|') ,mergedClimData$EcoReg) & mergedClimData$Year<2051), id.vars =c("Year", "Month", "decimalYear", "EcoReg", "CO2", "PAR", "O3","Prec","climate"))#,"Tmax", "Tmin")) # "Tmax", "Tmin", "PAR", "Prec", "CO2"))
   
   
   #head(meltedCD)
+ 
+  plot1<- ggplot(data =meltedCD, aes(x=decimalYear , y=value, linetype=variable , color=climate))+
+    annotate("rect", fill = "cornsilk3", alpha = .5, 
+             xmin = -Inf, xmax = 2010 ,
+             ymin = -Inf, ymax = Inf) +
+    geom_smooth()+# facet_wrap(~EcoReg )+
+    geom_vline(xintercept=2010) + theme_bw()+ 
+    labs(y="Temperature (C)", x="Year", title= "Climate Scenarios: Average of Yearly Temperatures Extremes", color="Scenarios", linetype="Temperatures", fill="Shading")+
+    scale_color_manual(labels = c("A2 Climate", "Recent Trends"), values=  hue_pal()(2)) + guides(color=guide_legend(override.aes=list(fill=NA)))+
+    scale_linetype_manual(labels = c("Avg. max", "Avg. min"), values = c(1, 4))+ guides(linetype=guide_legend(override.aes=list(fill=NA))) + 
+    theme(legend.position = c(0.9, 0.5));plot1  # + geom_rect(aes(xmin=1948, xmax=2010, ymin=0, ymax=Inf, color="orange"))
+    #legend(labels = c("Historic Climate", "Simulated Climate"), values=  c( "burlywood4", "white" ))
   
-  #ggplot(data =meltedCD, aes(x=decimalYear , y=Prec  , color=climate)) + geom_point()+ facet_wrap(~EcoReg ) + labs(title ="A2 Scenario")
+  
+  
+  meltedCD <- melt(subset(mergedClimData, grepl( paste(sort(unique(values(ecras))), collapse='|') ,mergedClimData$EcoReg) & mergedClimData$Year<2051 & mergedClimData$Year>2009), id.vars =c("Year", "Month", "decimalYear", "EcoReg", "CO2", "PAR", "O3","Prec","climate"))#,"Tmax", "Tmin")) # "Tmax", "Tmin", "PAR", "Prec", "CO2"))
+  plotprec<- ggplot(data =meltedCD, aes(x=Month , y=Prec/10 , color=climate))+
+    geom_smooth()+ #facet_wrap(~EcoReg )+#geom_vline(xintercept=2010) + 
+    theme_bw()+ 
+    labs(y="Precipitation (cm)", x="Month", title= "Climate Scenarios: Average Monthly Precipitation (2010-2050)", color="Scenarios")+
+    scale_color_manual(labels = c("A2 Climate", "Recent Trends"), values=  hue_pal()(2)) + guides(color=guide_legend(override.aes=list(fill=NA)))+
+    scale_x_continuous(labels=c("Jan", "Mar", "May", "Jul", "Sept", "Nov"), breaks=c(1,3,5,7,9,11))+
+    theme(legend.position = c(0.9, 0.25));plotprec 
+  
+  
+  meltedCD <- melt(subset(mergedClimData, grepl( paste(sort(unique(values(ecras))), collapse='|') ,mergedClimData$EcoReg) & mergedClimData$Year<2051 & mergedClimData$Year>1948), id.vars =c("Year", "Month", "decimalYear", "EcoReg", "CO2", "PAR", "O3","Prec","climate"))#,"Tmax", "Tmin")) # "Tmax", "Tmin", "PAR", "Prec", "CO2"))
+  plotprec<- ggplot(data =meltedCD, aes(x=decimalYear , y=CO2 , color=climate))+
+    annotate("rect", fill = "cornsilk3", alpha = .5, 
+             xmin = -Inf, xmax = 2010 ,
+             ymin = -Inf, ymax = Inf) +
+    geom_smooth()+# facet_wrap(~EcoReg )+
+    geom_vline(xintercept=2010)+ theme_bw()+
+    labs(y="CO2 (ppm)", x="Year", title= "Climate Scenarios: Mean Atmospheric CO2 Concentration.", color="Scenarios")+
+    scale_color_manual(labels = c("A2 Climate", "Recent Trends"), values=  hue_pal()(2)) + guides(color=guide_legend(override.aes=list(fill=NA)))+
+    theme(legend.position = c(0.9, 0.25));plotprec 
+  
+  
   
   meltedCD$Prec <- meltedCD$Prec/10 # mm to cm
   

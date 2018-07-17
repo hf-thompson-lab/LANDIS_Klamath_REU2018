@@ -51,16 +51,16 @@ timestep <- as.numeric(timestep)
 
 #set up paths 
 luOutputPath <- paste0(file.path("land-use-maps","land-use-"), timestep, ".img")
-landUseMasterPath <- file.path("clippedRaster","land-use","combindLandUseRaster-master.img")
-slopePath<- file.path("clippedRaster","slopeClip16S.img")
-developPath <- file.path("clippedRaster","land-use/develop16S.img") #https://gis1.usgs.gov/csas/gap/viewer/land_cover/Map.aspx 
+landUseMasterPath <- file.path("clippedRaster","land-use","landOwnerSA3.tif")
+slopePath<- file.path("clippedRaster","slopeSA3.tif")
+developPath <- file.path("clippedRaster","land-use/developRasSA3.tif") #https://gis1.usgs.gov/csas/gap/viewer/land_cover/Map.aspx 
 severityPath <- file.path("fire", paste0("severity-",timestep,".img"))
 fuelPath <- file.path("fire", "fuels", paste0("FuelType-", timestep, ".img"))
 #timePath <- file.path("DFFS-output", paste0("TimeOfLastFire-",timestep, ".img")) # not used 
 cutHistoryPath <- file.path("land-use-maps","cutHistory.img")
 severityHistoryPath <- file.path("logs","severityHistory.img")
 dataPerTimeStepPath <- file.path("logs","trendsPerTimeStep.csv")
-fsCutPath <- file.path("clippedRaster", "fireBreaksFS.img")
+fsCutPath <- file.path("clippedRaster", "FSfirebreakSA3.tif")
 
 #read in rasters 
 luMaster <- raster(landUseMasterPath)
@@ -69,6 +69,9 @@ developRaster <- raster(developPath)
 severityRaster <- raster(severityPath)
 fuelRaster <- raster(fuelPath)
 #timeRaster <- raster(timePath) # not used 
+
+nrow <- 101
+ncol <- 205 
 
 #create or read in history rasters  
 if (timestep==1)# generate new cutHistory 
@@ -223,11 +226,11 @@ if (!ONLYFIREBREAK){
     #slim down the size of so that we are only planning fuel breaks on the private side of the land
     tempFuelRas <- fuelRaster
     vals <- values(tempFuelRas)
-    matVals <- matrix(vals, nrow=310, ncol=312)
-    matVals[1:135,]<- 0 #135 is about where there forest service land stops and and the private land begins in the land use map. 
+    matVals <- matrix(vals, nrow=ncol, ncol=nrow) # have to flip nrow and ncol for raster to matrix conversion 
+    matVals[1:95,]<- 0 #95 is about where there forest service land stops and and the private land begins in the land use map. 
     values(tempFuelRas)<- as.vector(matVals)
 
-    fuelBreaks <- findFuelBreaks(tempFuelRas, fuelValsToConsider= (c(1:6,10,11)+1), minCellsConnect=35, numFuelsToSplit=4, numOfLargestFuelsToPickFrom=12)
+    fuelBreaks <- findFuelBreaks(tempFuelRas, fuelValsToConsider= (c(1:6,10,11)+1), minCellsConnect=20, numFuelsToSplit=2, numOfLargestFuelsToPickFrom=8, rownum=ncol, colnum =  nrow)# have to flip nrow and ncol for the raster to matrix conversion
     values(dR)[which(!is.na(values(fuelBreaks)))] <- 155
   #}
   
@@ -321,7 +324,7 @@ print(paste0("cells cut: ", cutsMade))
 linesLog <- c(linesLog, paste0("cells cut: ", cutsMade))
 print(paste0("ha cut: ", cutsMade*7.29))
 linesLog <- c(linesLog, paste0("ha cut: ", cutsMade*7.29))
-totalCutsPossible <- 310*312 - length(outOfBoundsCells) - length(unforestedCells) - length(wildernessCells)
+totalCutsPossible <- nrow*ncol - length(outOfBoundsCells) - length(unforestedCells) - length(wildernessCells)
 print(paste0("percent cut (total cells -OoB-UF-WA): ", round(cutsMade/(totalCutsPossible)*100,2), "%" ))
 linesLog <- c(linesLog, paste0("percent cut (total cells -OoB-UF-WA): ", round(cutsMade/(totalCutsPossible)*100,2), "%" ))
 

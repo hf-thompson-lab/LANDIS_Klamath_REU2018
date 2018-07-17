@@ -13,52 +13,18 @@ SiteLog		output/land-use/site-log.csv  <<optional:  default=don't generate log
 
 
 >>------------------------------------
-LandUse          "Forest Growth"
+LandUse          "NA values -- Forest Growth"
 >>------------------------------------
 MapCode          0 
 AllowHarvest?    no 
 LandCoverChange  NoChange
 
 >>------------------------------------
-LandUse          "Forest Growth1"
+LandUse          "Forest Growth"
 >>------------------------------------
 MapCode          1 
 AllowHarvest?    no 
 LandCoverChange  NoChange
-
->>------------------------------------
-LandUse          "Forest Growth2"
->>------------------------------------
-MapCode          4
-AllowHarvest?    no 
-LandCoverChange  NoChange
-
->>------------------------------------
-LandUse          "light Forest Thinning"
->>------------------------------------
-MapCode          2
-AllowHarvest?    no
-LandCoverChange  RemoveTrees
-RepeatHarvest?   Yes 
-  		ABGRC 		1-10 (10%)
-	        ACMA3		1-10 (10%)
- 		ALRU2		1-10 (10%)
-		PSME      	1-10 (10%)
-		PIMO3		1-10 (10%)
-
-
->>------------------------------------
-LandUse          "heavy Forest Thinning"
->>------------------------------------
-MapCode          3
-AllowHarvest?    no
-LandCoverChange  RemoveTrees
-RepeatHarvest?   Yes
-  		ABGRC 		1-10 (25%)
-	        ACMA3		1-10 (25%)
- 		ALRU2		1-10 (25%)
-		PSME      	1-10 (25%)
-		PIMO3		1-10 (25%)
 
 
 >>------------------------------------
@@ -81,19 +47,19 @@ MapCode          156
 AllowHarvest?    no
 LandCoverChange  RemoveTrees
 RepeatHarvest?   no
-  		ABGRC 		1-500 (99%)
-	        ACMA3		1-350 (99%)
- 		ALRU2		1-250 (99%)
-		PIMO3		1-600 (99%)
-		PSME      	1-650 (99%)
+  		ABGRC 		1-500 (80%)
+	        ACMA3		1-350 (80%)
+ 		ALRU2		1-250 (80%)
+		PIMO3		1-600 (80%)
+		PSME      	1-650 (80%)
 
 
 >>lake tahoe forest management >> https://www.fs.usda.gov/Internet/FSE_DOCUMENTS/fsm9_046124.pdf
 >>surface fuel reduced by 10-15 tons/arce 
 
->> remove trees between 3 - 30 inch dbh 
+>> remove trees between 3 - 30 dbh 
 >> used on slopes less than 30% 
->> pines favored for retention 
+>> pines favored for retention << removed for now
 >>------------------------------------
 LandUse          "mechanical Thinning - Uplands" 
 >>------------------------------------
@@ -101,14 +67,14 @@ MapCode          20
 AllowHarvest?    no
 LandCoverChange  RemoveTrees
 RepeatHarvest?   Yes
-  		ABGRC 		1-25 (95%)
-	        ACMA3		1-25 (95%)
- 		ALRU2		1-25 (95%)
-		PSME      	1-25 (70%)
-		PIMO3		1-25 (95%)
+  		ABGRC 		5-60 (90%)
+	        ACMA3		5-60 (90%)
+ 		ALRU2		5-60 (90%)
+		PSME      	5-60 (90%)
+		PIMO3		5-60 (90%)
 
->> remove trees up to 14 inches dbh 
->> pines favored for retention 
+>> remove trees up to 14 dbh 
+>> pines favored for retention << removed for now
 >>"Use hand treatments, end-lining or equipment reach to reduce hazardous fuels on slopes greater than 30% (BMP#5-2)."
 >>------------------------------------
 LandUse          "Hand Thinning - Uplands"
@@ -117,11 +83,11 @@ MapCode          21
 AllowHarvest?    no
 LandCoverChange  RemoveTrees
 RepeatHarvest?   Yes
-  		ABGRC 		1-15 (90%)
-	        ACMA3		1-15 (90%)
- 		ALRU2		1-15 (90%)
-		PIMO3		1-15 (65%)
-		PSME      	1-15 (90%)
+  		ABGRC 		1-30 (90%)
+	        ACMA3		1-30 (90%)
+ 		ALRU2		1-30 (90%)
+		PIMO3		1-30 (90%)
+		PSME      	1-30 (90%)
 
 
 
@@ -145,31 +111,31 @@ MapCode          31
 AllowHarvest?    no
 LandCoverChange  RemoveTrees
 RepeatHarvest?   No
-  		ABGRC 		1-500 (90%)
-	        ACMA3		1-350 (90%)
- 		ALRU2		1-250 (90%)
-		PIMO3		1-600 (90%)
-		PSME      	1-650 (90%)
+  		ABGRC 		1-500 (80%)
+	        ACMA3		1-350 (80%)
+ 		ALRU2		1-250 (80%)
+		PIMO3		1-600 (80%)
+		PSME      	1-650 (80%)
 
 
 
 
 
 >>------------------------------------
-LandUse          "Wind Clearcut"  
+>>LandUse          "Wind Clearcut"  
 >>------------------------------------
-MapCode          100  
-AllowHarvest?    Yes
+>>MapCode          100  
+>>AllowHarvest?    Yes
 >>         PreventEstablishment  
-LandCoverChange	 RemoveTrees
+>>LandCoverChange	 RemoveTrees
 >>          RepeatHarvest?   No
- 		PSME 1-300(5%)
+>> 		PSME 1-300(5%)
 >>  		ABGRC 		1-200 (50%)
 >>	        ACMA3		1-300 (20%)
 >> 		ALRU2		1-300 (99%)
 >>		PIMO3		1-300 (99%)
 >>  Plant fraxamer
-
+>>
 >>PreventEstablishment  <<prevent establishment implemented before LandCoverChange
 >>LandCoverChange	 InsectDefoliation <<removes the set percentage of foliage biomass
 >>RepeatHarvest?    No
