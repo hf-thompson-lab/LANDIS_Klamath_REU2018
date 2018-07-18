@@ -22,7 +22,7 @@ rasters <- lapply (simus.selection, function (sim){
   setwd(sim)
   
   if (length(list.files(path = './fire')) ==0) { return(NULL) }
-  ras.list <- paste0('fire/severity-',1:31,'.img') 
+  ras.list <- paste0('fire/severity-',1:40,'.img') 
   rastack  <- stack (ras.list)
   
   rastack <- reclassify(rastack,rcl = matrix (ncol = 3,byrow=T,data =c(-1,2.5,0,2.6,20,1)))
@@ -44,7 +44,7 @@ rasters <- lapply (simus.selection, function (sim){
 s <- stack(rasters[[1]],rasters[[2]],rasters[[3]],rasters[[4]])
 sp<- as(s, 'SpatialGridDataFrame')
 seededplots<- spplot(sp, names.attr= simus.selection[c(1, 2, 3, 4)], main = "Mean Fire Return Interval (Years) SEED=3333",
-                     colorkey=list(height =.75, at=c(seq(10, 20, 5), seq(20, 50, 10),70, 100)), labels=c(seq(10, 20, 5) ,seq(20, 50, 10),70, 100) , col.regions = colorRampPalette(c("red", "orange", "yellow","green","darkgreen") ) )
+                     colorkey=list(height =.75, at=c(seq(10, 60, 5))), labels=c(seq(10, 60, 5)) , col.regions = colorRampPalette(c("red", "orange", "yellow","green","darkgreen") ) )
 plot(seededplots)
 
 s1 <- stack(rasters[[4]],rasters[[6]],rasters[[10]],rasters[[12]])
@@ -56,7 +56,7 @@ plot(notseededplots)
 # plotting cut history and fire severity 
 
 chRas <- lapply (simus.selection, function (sim){
-  general.root.path <- "D:/Evan/91 Year Runs Output"#"C:/Users/hfintern/Desktop/Klamath_ForestXSiskiyouCounty/Saved Output"
+  general.root.path <- "C:/Users/hfintern/Desktop/sa3_Scenarios"#"C:/Users/hfintern/Desktop/Klamath_ForestXSiskiyouCounty/Saved Output"
   
   setwd(general.root.path)
   setwd(sim)
@@ -67,8 +67,8 @@ chRas <- lapply (simus.selection, function (sim){
 
   return(raster(ras))
 })
-commonNames <- c("A2 & LU seed=3333", "A3 and LU seed=RND", "Recent Trends & LU seed=3333", "Recent Trends & LU seed=RND") #simus.selection[c(5, 6, 11, 12)]
-s2 <- stack(chRas[[5]],chRas[[6]],chRas[[11]],chRas[[12]])
+commonNames <- c("A2 & LU", "Recent Trends & LU") #simus.selection[c(5, 6, 11, 12)]
+s2 <- stack(chRas[[2]],chRas[[4]])
 sp2<- as(s2, 'SpatialGridDataFrame')
 plots2<- spplot(sp2,names.attr= commonNames, main = "Cut History ")
 plot(plots2)
@@ -76,8 +76,8 @@ plot(plots2)
 
 # ploting AGB for each simulation ---- 
 
-constrainPlot <- function(plot, xlim= c(0,31), ylim){
-  cp <- plot + scale_x_continuous(limits = xlim) + scale_y_continuous(limits= ylim)
+constrainPlot <- function(plot, xlim= c(0,39), ylim){
+  cp <- plot  + scale_y_continuous(limits= ylim)
   return(cp)
 }
 
@@ -91,13 +91,30 @@ graphs <- lapply (simus.selection, function (sim){
   agbPath<- "output/agbiomass/AGBiomass_.txt"
   agb<- read.table(agbPath, header=T)
   
+  colnames(agb)[colnames(agb)=="ABGRCg.m2"] <- "Grand fir"
+  colnames(agb)[colnames(agb)=="ACMA3g.m2"] <- "Bigleaf maple"
+  colnames(agb)[colnames(agb)=="ALRU2g.m2"] <- "Red alder"
+  colnames(agb)[colnames(agb)=="PIMO3g.m2"] <- "Western white pine"
+  colnames(agb)[colnames(agb)=="PSMEg.m2"]  <- "Douglas fir"
+  print(colnames(agb))
+  
+  
+  
   meltagb <- melt(agb, id = "Time") 
   
-  p1<- ggplot(meltagb , aes(x= Time, y= value, color=variable)) +geom_smooth() + labs(title="Change in AGB over time ", subtitle= sim, y="AGB in g/m2") + theme_bw()
-  p1 <- constrainPlot(p1, ylim = c(0,7000))
+  p1<- ggplot(meltagb , aes(x= Time, y= value, color=variable)) +geom_smooth() + labs(subtitle= labs[which(simus.selection == sim)], y="", x="", color="Species") + theme_bw()
+  p1 <- constrainPlot(p1, ylim = c(0,8000)) + scale_x_continuous(labels= c(seq(2010,2050, 10)), limits = c(0,39)) + guides(color=guide_legend(override.aes=list(fill=NA)))#+
+   scale_color_manual(labels = c("1", "2","3", "4", "5"), values=  hue_pal()(5))
   return(p1)
 })
-
+#working place =====
+agbFig<- ggarrange(graphs[[1]],graphs[[2]],graphs[[3]],graphs[[4]], ncol=2, nrow=2, common.legend = TRUE, legend="top") 
+  annotate_figure(agbFig,  top = text_grob(paste("Change in Aboveground Biomass"), color = "Black", face = "bold", size = 14),
+                          bottom = text_grob("Year", color = "Black", size = 12),
+                          left = text_grob(expression(paste(
+                            "Aboveground Biomass (",
+                            g, "/", m^2,
+                            ")", sep="")), color = "Black", rot = 90,size = 12))
 
 # g_legend<-function(a.gplot){
 #   tmp <- ggplot_gtable(ggplot_build(a.gplot))
@@ -159,7 +176,10 @@ meltdf$Size[meltdf$Size=="-Inf"]<-0
 p7<- ggplot(meltdf, aes(x=Time, y=Size, color= value))+geom_point() + geom_smooth() + theme_bw()+  labs(title="Max fire Size");p7
 
 
-ggplot(meltdf) + geom_histogram(aes(MeanSeverity), bins=10) + facet_wrap(~value, ncol=1) + theme_bw()
+hist1<- ggplot(meltdf) + geom_histogram(aes(MeanSeverity), bins=10) + facet_wrap(~value, ncol=1) + theme_bw()
+hist2<- ggplot(meltdf) + geom_histogram(aes(TotalSites*7.29), bins=10) + facet_wrap(~value, ncol=1) + theme_bw()
+hist3<- ggplot(meltdf) + geom_histogram(aes(CohortsKilled), bins=10) + facet_wrap(~value, ncol=1) + theme_bw()
+ggarrange(hist1, hist2, hist3, ncol=3)
 
 p = ggplot(meltdf, aes(x=Size)) + theme_bw()+
   geom_histogram(position="identity", colour="grey40", alpha=0.2, bins = 6, breaks=c(0,1,2,3,4,5)) +  labs(title="Max recorded fire size over all years")+
@@ -278,13 +298,13 @@ labs <- c("A2 scenario", "A2 scenario & LU+", "Recent Trends", "Recent Trends & 
   ## extracting number of highest severity cells ----
 
   rdata <- lapply (simus.selection, function (sim){
-    general.root.path <- "D:/Evan/91 Year Runs Output"#"C:/Users/hfintern/Desktop/Klamath_ForestXSiskiyouCounty/Saved Output"
+    general.root.path <- "C:/Users/hfintern/Desktop/sa3_Scenarios"#"C:/Users/hfintern/Desktop/Klamath_ForestXSiskiyouCounty/Saved Output"
     
     setwd(general.root.path)
     setwd(sim)
     
     if (length(list.files(path = './fire')) ==0) { return(NULL) }
-    ras.list <- paste0('fire/severity-',1:91,'.img') 
+    ras.list <- paste0('fire/severity-',1:40,'.img') 
     count <- 1
     df <- do.call( rbind, lapply(ras.list ,  function(ras) {
       
@@ -300,12 +320,12 @@ labs <- c("A2 scenario", "A2 scenario & LU+", "Recent Trends", "Recent Trends & 
   })
   
   new <- do.call(function(l){
-    return(cbind(l,Time= 1:91))
+    return(cbind(l,Time= 1:40))
   }, rdata)
   complete <- do.call(rbind, rdata)
-  complete$Time <- rep(1:91, 8)
+  complete$Time <- rep(1:40, 4)
   complete
-  write.csv(complete ,"D:/Evan/severityData.csv")
+  write.csv(complete ,"D:/Evan/severityData40years.csv")
   
   meltSeverity <- melt(complete, id=c("Time","three", "four", "five", "six", "seven"))
 # graphing highest severity area ----
@@ -337,6 +357,7 @@ labs <- c("A2 scenario", "A2 scenario & LU+", "Recent Trends", "Recent Trends & 
   
   # scatter plot of fire severites
   nms <- subset(meltSeverity, grepl("not",meltSeverity$value, ignore.case = T ))
+  nms <- meltSeverity
   head(nms)
   nms[,7] <- NULL
   colnames(nms)[7]<- "sim"
@@ -346,9 +367,75 @@ labs <- c("A2 scenario", "A2 scenario & LU+", "Recent Trends", "Recent Trends & 
 
        
   ggplot(nms1, aes(x= Time , y=value*7.29 , color= variable)) + geom_point() +geom_smooth(level=.9) + facet_wrap(~sim) + theme_bw()+ 
-    labs(y="Area affected by different severity fires (ha)", x="Time (years)", title= "Fire severity distributions across simulations", color="Severity levels")+
-    scale_color_manual(labels = c("1", "2","3", "4", "5"), values=  hue_pal()(5)) + guides(color=guide_legend(override.aes=list(fill=NA)))
+    labs(y="Area affected by different severity fires (ha)", x="Year", title= "Fire severity distributions across simulations", color="Severity levels")+
+    scale_color_manual(labels = c("1", "2","3", "4", "5"), values=  hue_pal()(5)) + guides(color=guide_legend(override.aes=list(fill=NA))) 
+  
+
     
+  #nice severity level box plot with inset plot ----
+  
+  sumOfAffectedAreas <- t(data.frame(totalSites = sapply(unique(nms1$sim), function(simi){
+    return(  sum(nms1$value[nms1$sim == simi]) )
+  })))
+  
+ 
+  
+  library(grid)
+  library(datasets)
+  data(iris)
+  g <- ggplot(nms1, aes(variable, value*7.29))
+  g <- g + geom_boxplot(aes(fill=factor(sim))) + theme_bw()+
+    theme(axis.text.x = element_text(angle=0, vjust=0.6)) + 
+    labs(title="Affected area by severity level across simulations (2010-2050)", 
+         x="Fire severity levels", fill = "Scenarios",
+         y="Affected area (ha)")+
+    theme(legend.position = c(0.315, 0.89)) +
+    scale_fill_manual(labels = c("A2 Climate","A2 Climate & LU+", "Recent Trends", "Recent Trends & LU+"), values=  hue_pal()(4))+ 
+    scale_x_discrete(labels= c("1","2","3","4","5 (All affected cohorts killed)"))#, values= c("three","four", "five", "six", "seven"))
+
+  
+  saamelt <- melt(sumOfAffectedAreas)
+  subplot <- ggplot(saamelt, aes(Var2, value*7.29 , fill=factor(Var2))) + theme_bw() +geom_bar(stat="identity")+
+              theme(legend.position = "none") + labs(subtitle="Total affected area", y="Affected Area (ha)", x="Scenarios")+ 
+              theme(axis.text.x =element_blank(), axis.ticks.x = element_blank(),text = element_text(size=9))
+  
+  vp <- viewport(width = 0.2, height = 0.2, x = .07,y = .76, just = c("left","bottom"))
+  full <- function() {
+    print(g)
+    theme_set(theme_bw(base_size = 8))
+    print(subplot, vp = vp)
+    theme_set(theme_bw())
+  }
+  full()
+    
+  
+  # zooming in and ignoring the fire severity of 1 and 2 (three and four) 
+  nms2 <- nms1[321:800,]
+  
+  g <- ggplot(nms2, aes(variable, value*7.29))
+  g <- g + geom_boxplot(aes(fill=factor(sim))) + theme_bw()+
+    theme(axis.text.x = element_text(angle=0, vjust=0.6)) + 
+    labs(title="Affected area by severity level across simulations (2010-2050)", 
+         x="Fire severity levels", fill = "Scenarios",
+         y="Affected area (ha)")+
+    theme(legend.position = c(0.315, 0.89)) +  coord_cartesian(ylim=c(0, 1500))+
+    scale_fill_manual(labels = c("A2 Climate","A2 Climate & LU+", "Recent Trends", "Recent Trends & LU+"), values=  hue_pal()(4))+ 
+    scale_x_discrete(labels= c("3","4","5 (All affected cohorts killed)"))#, values= c("three","four", "five", "six", "seven")) +
+  
+  
+  saamelt <- melt(sumOfAffectedAreas)
+  subplot <- ggplot(saamelt, aes(Var2, value*7.29 , fill=factor(Var2))) + theme_bw() +geom_bar(stat="identity")+
+    theme(legend.position = "none") + labs(subtitle="Total affected area", y="Affected Area (ha)", x="Scenarios")+ 
+    theme(axis.text.x =element_blank(), axis.ticks.x = element_blank(),text = element_text(size=9))
+  
+  vp <- viewport(width = 0.2, height = 0.2, x = .07,y = .76, just = c("left","bottom"))
+  full <- function() {
+    print(g)
+    theme_set(theme_bw(base_size = 8))
+    print(subplot, vp = vp)
+    theme_set(theme_bw())
+  }
+  full()
   
   
 ## Total cohorts exploration ---- 
@@ -356,7 +443,7 @@ labs <- c("A2 scenario", "A2 scenario & LU+", "Recent Trends", "Recent Trends & 
   
   cohortData <- list()
   cohortList<- lapply (simus.selection, function (sim){
-    general.root.path <- "D:/Evan/91 Year Runs Output"
+    general.root.path <- "C:/Users/hfintern/Desktop/sa3_Scenarios"
     
     setwd(general.root.path)
     setwd(sim)
@@ -381,19 +468,33 @@ labs <- c("A2 scenario", "A2 scenario & LU+", "Recent Trends", "Recent Trends & 
   cohortMelt <- melt(TotalCohortData, id=c(colnames(TotalCohortData)[1:13]))
   
   head(cohortMelt)
-  
-  ggplot(cohortMelt, aes(x=Time, y=X.Cohorts, color=value)) + geom_point() +geom_smooth()+ theme_bw() + 
+  cohortMelt <- subset(cohortMelt, cohortMelt$Time <40)
+  ggplot(cohortMelt, aes(x=Time, y=Litter.kgDW.m2., color=value)) + geom_point() +geom_smooth()+ theme_bw() + 
     labs(y="Number of cohorts", x="Time (years)", title= "Total cohorts over time", color="Scenarios")#+
     #scale_color_manual(labels = c("1", "2","3", "4", "5", "6"), values=hue_pal()(6)) + guides(color=guide_legend(override.aes=list(fill=NA)))
     
-  ggplot(cohortMelt, aes(x=Time, y=WoodyDebris.kgDW.m2., color=value)) + geom_point() +geom_smooth()+ theme_bw() + 
+  ggplot(cohortMelt, aes(x=Time, y=WoodyDebris.kgDW.m2., color=value)) + geom_smooth()+ theme_bw() + 
     labs(y="Amount of woody debris (kgDW/m2)", x="Time (years)", title= "Wood Debris over time", color="Scenarios")#+
   #scale_color_manual(labels = c("1", "2","3", "4", "5", "6"), values=hue_pal()(6)) + guides(color=guide_legend(override.aes=list(fill=NA)))
+  
+  ggplot(cohortMelt, aes(Time, WoodyDebris.kgDW.m2., fill=value, color=value)) + geom_area(stat="identity",position=position_dodge(.5), alpha=.25, size=1)+ 
+    coord_cartesian(ylim=c(850, 3000))+ geom_point() + 
+    labs(y=expression(paste(
+      "WoodyDebris (",
+      kg,DW, "/", m^2,
+      ")", sep="")),
+         x="Year", title= "Woody debris across scenarios", color="Scenarios", fill="Scenarios")+
+    scale_color_manual("Scenarios",labels = c("A2 Climate", "A2 Climate & LU","Recent Trends", "Recent Trends & LU"), values=  hue_pal()(4)) +
+    scale_fill_manual("Scenarios",labels = c("A2 Climate", "A2 Climate & LU","Recent Trends", "Recent Trends & LU"), values=  hue_pal()(4))+ 
+    scale_x_continuous(labels=seq(2010,2050,10))+
+    theme(legend.position = c(0.85, 0.1))
+    
+    
   
   
   bioList <- list()
   bioList<- lapply (simus.selection, function (sim){
-    general.root.path <- "D:/Evan/91 Year Runs Output"
+    general.root.path <- "C:/Users/hfintern/Desktop/sa3_Scenarios"
     
     setwd(general.root.path)
     setwd(sim)
@@ -411,8 +512,9 @@ labs <- c("A2 scenario", "A2 scenario & LU+", "Recent Trends", "Recent Trends & 
   biomassDF$X<-NULL 
   
   bioMelt <- melt(biomassDF, id=c("Time", "sim")) 
-
-  ggplot(bioMelt, aes(x=Time, y=value, color=sim)) +geom_smooth()+ theme_bw() + facet_grid(~variable)+
+  
+  bioMelt <- subset(bioMelt, bioMelt$Time<40)
+  ggplot(bioMelt, aes(x=Time, y=value, color=sim, linetype=variable)) +geom_smooth(size=2)+ theme_bw() +# facet_grid(~variable)+
     labs(y="Biomass (g/m2)", x="Time (years)", title= "Biomass over time", color="Scenarios")+guides(legend.position="bottom")
   
   
