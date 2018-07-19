@@ -8,10 +8,11 @@ library(scales)
 scenarioPath <-"C:/Users/hfintern/Desktop/sa3_10YTS"## "C:/Users/hfintern/Desktop/sa3_Scenarios"
 
 sims <- list.dirs(scenarioPath, recursive = F, full.names = F)
-sims
+sims<- sims[!grepl("Graphs",sims)]
+
 simus.selection <- sims 
 general.root.path <- scenarioPath
-common.names <- c("A2 Climate & LU","Recent Trends","Recent Trends & LU")#the order has to match the order of the simus.selection
+common.names <- c("A2 Climate","A2 Climate & LU","Recent Trends","Recent Trends & LU")#the order has to match the order of the simus.selection
 #general.root.path <- #"C:/Users/hfintern/Desktop/sa3_Scenarios"#"C:/Users/hfintern/Desktop/Klamath_ForestXSiskiyouCounty/Saved Output"
 
 timesteps <- 1:9 * 10 
@@ -54,7 +55,7 @@ rasters <- lapply (simus.selection, function (sim){
 
 s1 <- stack(rasters)
 sp1<- as(s1, 'SpatialGridDataFrame')
-notseededplots<- spplot(sp1,names.attr= simus.selection[c(1, 2, 3)], main = "Mean Fire Return Interval (Years)",
+notseededplots<- spplot(sp1,names.attr= common.names, main = list("Mean Fire Return Interval (Years)", cex=2),
                         colorkey=list(height =.75, at=seq(10, 100, 10) ), labels=seq(10, 100, 10) ,  col.regions = colorRampPalette(c("red", "yellow","grey","white") ) )
 plot(notseededplots)
 
@@ -102,19 +103,19 @@ graphs <- lapply (simus.selection, function (sim){
   
   meltagb <- melt(agb, id = "Time") 
   
-  p1<- ggplot(meltagb , aes(x= Time, y= value, color=variable)) +geom_smooth() + labs(subtitle= common.names[which(simus.selection == sim)], y="", x="", color="Species") + theme_bw()
-  p1 <- constrainPlot(p1, ylim = c(0,max(meltagb$value) +100)) + scale_x_continuous(labels= 2010+c(0,timesteps), breaks = c(0,timesteps), limits = c(0,max(timesteps))) + guides(color=guide_legend(override.aes=list(fill=NA)))#+
+  p1<- ggplot(meltagb , aes(x= Time, y= value, color=variable)) +geom_smooth() + labs(subtitle= common.names[which(simus.selection == sim)], y="", x="", color="Species") + theme_bw(base_size = 20)
+  p1 <- constrainPlot(p1, ylim = c(0,10500)) + scale_x_continuous(labels= 2010+c(0,timesteps), breaks = c(0,timesteps), limits = c(0,max(timesteps))) + guides(color=guide_legend(override.aes=list(fill=NA)))#+
   # scale_color_manual(labels = c("1", "2","3", "4", "5"), values=  hue_pal()(5))
   return(p1)
 })
 
 agbFig<- ggarrange(graphs[[1]],graphs[[2]],graphs[[3]],graphs[[4]], ncol=2, nrow=2, common.legend = TRUE, legend="top") 
-annotate_figure(agbFig,  top = text_grob(paste("Change in Aboveground Biomass"), color = "Black", face = "bold", size = 14),
-                bottom = text_grob("Year", color = "Black", size = 12),
+annotate_figure(agbFig,  top = text_grob(paste("Change in Aboveground Biomass"), color = "Black", face = "bold", size = 25),
+                bottom = text_grob("Year", color = "Black", size = 25),
                 left = text_grob(expression(paste(
                   "Aboveground Biomass (",
                   g, "/", m^2,
-                  ")", sep="")), color = "Black", rot = 90,size = 12))
+                  ")", sep="")), color = "Black", rot = 90,size = 25))
 
 # g_legend<-function(a.gplot){
 #   tmp <- ggplot_gtable(ggplot_build(a.gplot))
@@ -385,12 +386,12 @@ sumOfAffectedAreas <- t(data.frame(totalSites = sapply(unique(nms1$sim), functio
 library(grid)
 
 g <- ggplot(nms1, aes(variable, value*7.29))
-g <- g + geom_boxplot(aes(fill=factor(sim))) + theme_bw()+
+g <- g + geom_boxplot(aes(fill=factor(sim))) + theme_bw(base_size = 20)+
   theme(axis.text.x = element_text(angle=0, vjust=0.6)) + 
-  labs(title="Affected area by severity level across simulations (2010-2050)", 
+  labs(title="Affected area by severity level across simulations (2010-2100)", 
        x="Fire severity levels", fill = "Scenarios",
        y="Affected area (ha)")+
-  theme(legend.position = c(0.315, 0.89)) +
+  theme(legend.position = c(0.325, 0.89)) +
   scale_fill_manual(labels = c("A2 Climate","A2 Climate & LU+", "Recent Trends", "Recent Trends & LU+"), values=  hue_pal()(4))+ 
   scale_x_discrete(labels= c("1","2","3","4","5 (All affected cohorts killed)"))#, values= c("three","four", "five", "six", "seven"))
 
@@ -398,12 +399,12 @@ g <- g + geom_boxplot(aes(fill=factor(sim))) + theme_bw()+
 saamelt <- melt(sumOfAffectedAreas)
 subplot <- ggplot(saamelt, aes(Var2, value*7.29 , fill=factor(Var2))) + theme_bw() +geom_bar(stat="identity")+
   theme(legend.position = "none") + labs(subtitle="Total affected area", y="Affected Area (ha)", x="Scenarios")+ 
-  theme(axis.text.x =element_blank(), axis.ticks.x = element_blank(),text = element_text(size=9))
+  theme(axis.text.x =element_blank(), axis.ticks.x = element_blank(),text = element_text(size=12))
 
-vp <- viewport(width = 0.2, height = 0.2, x = .07,y = .76, just = c("left","bottom"))
+vp <- viewport(width = 0.2, height = 0.2, x = .1,y = .725, just = c("left","bottom"))
 full <- function() {
   print(g)
-  theme_set(theme_bw(base_size = 8))
+  theme_set(theme_bw(base_size = 20))
   print(subplot, vp = vp)
   theme_set(theme_bw())
 }
@@ -411,15 +412,15 @@ full()
 
 
 # zooming in and ignoring the fire severity of 1 and 2 (three and four) 
-nms2 <- nms1[321:800,]
+nms2 <- nms1[73:180,]
 
 g <- ggplot(nms2, aes(variable, value*7.29))
-g <- g + geom_boxplot(aes(fill=factor(sim))) + theme_bw()+
+g <- g + geom_boxplot(aes(fill=factor(sim))) + theme_bw(base_size = 20)+
   theme(axis.text.x = element_text(angle=0, vjust=0.6)) + 
-  labs(title="Affected area by severity level across simulations (2010-2050)", 
+  labs(title="Affected area by severity level across simulations (2010-2100)", 
        x="Fire severity levels", fill = "Scenarios",
        y="Affected area (ha)")+
-  theme(legend.position = c(0.315, 0.89)) +  coord_cartesian(ylim=c(0, 1500))+
+  theme(legend.position = c(0.325, 0.89)) +  coord_cartesian(ylim=c(0, 11000))+
   scale_fill_manual(labels = c("A2 Climate","A2 Climate & LU+", "Recent Trends", "Recent Trends & LU+"), values=  hue_pal()(4))+ 
   scale_x_discrete(labels= c("3","4","5 (All affected cohorts killed)"))#, values= c("three","four", "five", "six", "seven")) +
 
@@ -427,9 +428,9 @@ g <- g + geom_boxplot(aes(fill=factor(sim))) + theme_bw()+
 saamelt <- melt(sumOfAffectedAreas)
 subplot <- ggplot(saamelt, aes(Var2, value*7.29 , fill=factor(Var2))) + theme_bw() +geom_bar(stat="identity")+
   theme(legend.position = "none") + labs(subtitle="Total affected area", y="Affected Area (ha)", x="Scenarios")+ 
-  theme(axis.text.x =element_blank(), axis.ticks.x = element_blank(),text = element_text(size=9))
+  theme(axis.text.x =element_blank(), axis.ticks.x = element_blank(),text = element_text(size=12))
 
-vp <- viewport(width = 0.2, height = 0.2, x = .07,y = .76, just = c("left","bottom"))
+vp <- viewport(width = 0.2, height = 0.2, x = .08,y = .725, just = c("left","bottom"))
 full <- function() {
   print(g)
   theme_set(theme_bw(base_size = 8))
@@ -469,21 +470,35 @@ cohortMelt <- melt(TotalCohortData, id=c(colnames(TotalCohortData)[1:13]))
 
 head(cohortMelt)
 
-ggplot(cohortMelt, aes(x=Time, y=Litter.kgDW.m2., color=value)) + geom_point() +geom_smooth()+ theme_bw() + 
+ggplot(cohortMelt, aes(x=Time, y=X.Cohorts , color=value)) + geom_point() +geom_smooth()+ theme_bw() + 
   labs(y="Number of cohorts", x="Time (years)", title= "Total cohorts over time", color="Scenarios")#+
 #scale_color_manual(labels = c("1", "2","3", "4", "5", "6"), values=hue_pal()(6)) + guides(color=guide_legend(override.aes=list(fill=NA)))
 
 ggplot(cohortMelt, aes(x=Time, y=WoodyDebris.kgDW.m2., color=value)) + geom_smooth()+ theme_bw() + 
   labs(y="Amount of woody debris (kgDW/m2)", x="Time (years)", title= "Wood Debris over time", color="Scenarios")#+
 #scale_color_manual(labels = c("1", "2","3", "4", "5", "6"), values=hue_pal()(6)) + guides(color=guide_legend(override.aes=list(fill=NA)))
-
+cohortMelt<-subset(cohortMelt, cohortMelt$Time<90)
 ggplot(cohortMelt, aes(Time, WoodyDebris.kgDW.m2., fill=value, color=value)) + geom_area(stat="identity",position=position_dodge(.5), alpha=.25, size=1)+ 
-  coord_cartesian(ylim=c(850, max(cohortMelt$WoodyDebris.kgDW.m2.)+100))+ geom_point() + 
+  coord_cartesian(ylim=c(850, max(cohortMelt$WoodyDebris.kgDW.m2.)+100))+ geom_point() + theme_bw(base_size = 20)+
   labs(y=expression(paste(
     "WoodyDebris (",
     kg,DW, "/", m^2,
     ")", sep="")),
     x="Year", title= "Woody debris across scenarios", color="Scenarios", fill="Scenarios")+
+  scale_color_manual("Scenarios",labels = c("A2 Climate", "A2 Climate & LU","Recent Trends", "Recent Trends & LU"), values=  hue_pal()(4)) +
+  scale_fill_manual("Scenarios",labels = c("A2 Climate", "A2 Climate & LU","Recent Trends", "Recent Trends & LU"), values=  hue_pal()(4))+ 
+  scale_x_continuous(labels=c(0,timesteps)+2010, breaks = c(0,timesteps) )+
+  theme(legend.position = c(0.85, 0.1))
+
+
+
+ggplot(cohortMelt, aes(Time, Litter.kgDW.m2., fill=value, color=value)) + geom_area(stat="identity",position=position_dodge(.5), alpha=.25, size=1)+ 
+  coord_cartesian(ylim=c(0, max(cohortMelt$Litter.kgDW.m2.)+100))+ geom_point() + theme_bw(base_size = 20)+
+  labs(y=expression(paste(
+    "Litter (",
+    kg,DW, "/", m^2,
+    ")", sep="")),
+    x="Year", title= "Litter across scenarios", color="Scenarios", fill="Scenarios")+
   scale_color_manual("Scenarios",labels = c("A2 Climate", "A2 Climate & LU","Recent Trends", "Recent Trends & LU"), values=  hue_pal()(4)) +
   scale_fill_manual("Scenarios",labels = c("A2 Climate", "A2 Climate & LU","Recent Trends", "Recent Trends & LU"), values=  hue_pal()(4))+ 
   scale_x_continuous(labels=c(0,timesteps)+2010, breaks = c(0,timesteps) )+
