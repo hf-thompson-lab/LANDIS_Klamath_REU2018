@@ -26,7 +26,7 @@ equalibrium <- function(arr, tol) {
 # @param numFuelsToSplit - is the number of the largest connected components that you want to split in 4's 
 # @param numOfLargestFuelsToPickFrom - is the number of the largest connected components that you want to split in 4's that you want to randomly sample from to split
 # @param tabuList - if TRUE, implement the createTabuList function
-findFuelBreaks <- function(fuelRaster, fuelValsToConsider= (c(1:6,10,11)+1), minCellsConnect , numFuelsToSplit, numOfLargestFuelsToPickFrom, tabuList=T, rownum=310, colnum=312 ){
+findFuelBreaks <- function(fuelRaster, fuelValsToConsider= (c(1:6,10,11)+1), minCellsConnect , numFuelsToSplit, numOfLargestFuelsToPickFrom, tabuList=T, rownum=310, colnum=312,tabuListPath=tabuListPath){
   require(raster)
   require(spatstat)
   
@@ -130,7 +130,7 @@ findFuelBreaks <- function(fuelRaster, fuelValsToConsider= (c(1:6,10,11)+1), min
   values(holder)[which(values(holder) ==0)] <- NA
   
   #if tabuList is TRUE then make sure that the cuts are not too close
-  if (tabuList){ holder <- createTabuList(cuts=storage, cutRaster= holder, tabuLength = 10)} 
+  if (tabuList){ holder <- createTabuList(cuts=storage, cutRaster= holder, tabuLength = 10,tabuListPath=tabuListPath)} 
   
   return(holder)
 }
@@ -140,12 +140,12 @@ findFuelBreaks <- function(fuelRaster, fuelValsToConsider= (c(1:6,10,11)+1), min
 # @param cutRaster - the location of the cuts in the raster where the values corresponds to an ID from cuts 
 # @param proximityTol - cuts within this tolerance will be disregarded
 # @param tabuLength - number of years that the tabu list will remember
-createTabuList <- function(cuts, cutRaster, proximityTol =10 , tabuLength){
+createTabuList <- function(cuts, cutRaster, proximityTol =10 , tabuLength, tabuListPath=tabuListPath){
   #get the current timestep to use as id
   timestep <- as.numeric(readLines( "lockfile",n = 1))
   
   #read in the past cuts 
-  tabuList <- read.csv(file.path("logs","tabuList.csv"), header=T)
+  tabuList <- read.csv(tabuListPath, header=T)
   
   #throw out cuts that are within tolerance
   for (i in 1:length(cuts$colEq))
@@ -165,7 +165,7 @@ createTabuList <- function(cuts, cutRaster, proximityTol =10 , tabuLength){
     tabuList <- rbind(tabuList, cbind(cuts, id=rep(timestep,length(cuts$colEq)))) 
   }
   else { #tabu list is full. replace the oldest id.
-    tabuList <- read.csv(file.path("logs","tabuList.csv"), header = T)
+    tabuList <- read.csv(tabuListPath, header = T)
     minID <- min(tabuList$id)
     rowsToReplace <- which(minID==tabuList$id)
     tabuList <- tabuList[-rowsToReplace,]
@@ -173,7 +173,7 @@ createTabuList <- function(cuts, cutRaster, proximityTol =10 , tabuLength){
   }
   
   #write out updated tabu list 
-  write.csv(tabuList, file.path("logs","tabuList.csv"), row.names = F, quote = F)
+  write.csv(tabuList, tabuListPath, row.names = F, quote = F)
   
   #return updated cutRaster
   return(cutRaster)

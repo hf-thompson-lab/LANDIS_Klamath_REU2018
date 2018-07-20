@@ -26,7 +26,7 @@
 
 # fuel breaks implemented to clear cut in order to divide large groups of connect fuel types. 
 # FS owned land uses planned fuel breaks that follow the low elevations contour. 
-    # these consist of 3 lines that cut every 10 years  
+# these consist of 3 lines that cut every 10 years  
 
 # Section - start setup ----
 start_time <- Sys.time()
@@ -39,9 +39,9 @@ library(rgdal)
 library(rgeos)
 
 #set working directory
-workingDirectoryPath <- "C:/Users/hfintern/Desktop/Klamath_ForestXSiskiyouCounty" 
-# TODO change to be relative path ==== 
+workingDirectoryPath <- getwd()
 setwd(workingDirectoryPath)
+
 print(getwd())
 linesLog <- c(linesLog, getwd())
 
@@ -50,16 +50,18 @@ timestep <- readLines( "lockfile",n = 1)
 timestep <- as.numeric(timestep)
 
 #set up paths 
-luOutputPath <- paste0(file.path("land-use-maps","land-use-"), timestep, ".img")
+landUseParameterFilePath <- file.path("land-use-FireManagement.txt")
+luOutputPath <- paste0(file.path("..","Landis_Outputs","land-use-maps","land-use-"), timestep, ".img")
 landUseMasterPath <- file.path("clippedRaster","land-use","landOwnerSA3.tif")
 slopePath<- file.path("clippedRaster","slopeSA3.tif")
 developPath <- file.path("clippedRaster","land-use/developRasSA3.tif") #https://gis1.usgs.gov/csas/gap/viewer/land_cover/Map.aspx 
-severityPath <- file.path("fire", paste0("severity-",timestep,".img"))
-fuelPath <- file.path("fire", "fuels", paste0("FuelType-", timestep, ".img"))
-#timePath <- file.path("DFFS-output", paste0("TimeOfLastFire-",timestep, ".img")) # not used 
-cutHistoryPath <- file.path("land-use-maps","cutHistory.img")
-severityHistoryPath <- file.path("logs","severityHistory.img")
-dataPerTimeStepPath <- file.path("logs","trendsPerTimeStep.csv")
+severityPath <- file.path("..","Landis_Outputs","fire", paste0("severity-",timestep,".img"))
+fuelPath <- file.path("..","Landis_Outputs","fire", "fuels", paste0("FuelType-", timestep, ".img"))
+cutHistoryPath <- file.path("..","Landis_Outputs","land-use-maps","cutHistory.img")
+severityHistoryPath <- file.path("..","Landis_Outputs","logs","severityHistory.img")
+dataPerTimeStepPath <- file.path("..","Landis_Outputs","logs","trendsPerTimeStep.csv")
+logTxtPath <- file.path("..","Landis_Outputs","logs","logfile.txt")
+tabuListPath <- file.path("..","Landis_Outputs","logs","tabuList.csv")
 fsCutPath <- file.path("clippedRaster", "FSfirebreakSA3.tif")
 
 #read in rasters 
@@ -68,29 +70,29 @@ slopeRaster <- raster(slopePath)
 developRaster <- raster(developPath)
 severityRaster <- raster(severityPath)
 fuelRaster <- raster(fuelPath)
-#timeRaster <- raster(timePath) # not used 
+
 
 nrow <- 101
 ncol <- 205 
 
 #create or read in history rasters  
-if (timestep==1)# generate new cutHistory 
+if (timestep==1 | !dir.exists(file.path("..","Landis_Outputs","logs")) | !dir.exists(file.path("..","Landis_Outputs","land-use-maps")))# generate new cutHistory 
 {
-  if (!dir.exists("logs")) {dir.create(file.path("logs"))}  # create the logs directory if it isnt there
-  if (!dir.exists("land-use-maps")) {dir.create(file.path("land-use-maps"))}  # create the land-use-maps directory if it isnt there
+  if (!dir.exists(file.path("..","Landis_Outputs","logs"))) {dir.create(file.path(file.path("..","Landis_Outputs","logs")))}  # create the logs directory if it isnt there
+  if (!dir.exists(file.path("..","Landis_Outputs","land-use-maps"))) {dir.create(file.path(file.path("..","Landis_Outputs","land-use-maps")))}  # create the land-use-maps directory if it isnt there
   
   cutHistory <- luMaster
   values(cutHistory)[!(is.na(values(luMaster) ))] <- -1
   
   severityHistory <- luMaster
   values(severityHistory)[!(is.na(values(luMaster) ))] <- -1
-
+  
   #overwrite log file and trendsperTimeStep file 
-  write(" ", file.path("logs","logfile.txt"), append=F)
+  write(" ", logTxtPath, append=F)
   write.table( data.frame(TimeStep= numeric() , CellsCut = numeric(),FSCuts= numeric(), PrivateCuts= numeric(), CutsNearDevelopment = numeric()  , CutsForPostFireSalvage = numeric(), rejectedProximityCuts=numeric(), rejectedSalvageCuts= numeric(), CellsWithFire=numeric()) ,  file=dataPerTimeStepPath ,  append = F,  sep=',',  row.names=F,  col.names=T )
   
   #erase previous tabu logs
-  write.csv(data.frame(colEq=numeric(0), rowEq=numeric(0), step=numeric(0), id=numeric(0)), file.path("logs","tabuList.csv"), row.names = F, quote = F)
+  write.csv(data.frame(colEq=numeric(0), rowEq=numeric(0), step=numeric(0), id=numeric(0)),tabuListPath, row.names = F, quote = F)
   
 }else #read in cutHistory  
 {
@@ -107,14 +109,6 @@ PERMANENTFSFIREBREAKS <- T # if TRUE this forces FS land to use the same  fire b
 
 # Section - cut limits and determining inactive cells and prohibited cells from cut history ---- 
 
-# set up limits for cutting on private and forest service
-#total cells active cells -- 300*312 - length(inSquareInactiveCells) - length(outOfSquareCells) = 54271  # this might be wrong it might be  57391
-# 54271*.05 = 2714 
-maxPercentCut <- .04 #max percent of cells that will be cut each year 
-maxCutCells<- 54271 * maxPercentCut 
-fsLimit<- floor(maxCutCells * 0.6766776) #(30414+12080)/(14464+5836+4 +30414+12080) #these numbers come from freq(luMaster)
-privateLimit <- floor(maxCutCells* 0.3233224) # (14464+5836+4)/(14464+5836+4 +30414+12080)
-
 # we can grab the unforested areas from the fuels and delete them later
 #unforested areas are 1 , out of bounds areas are 0 
 outOfSquareCells <- which(is.na(values(luMaster)))  # out of square cells 
@@ -122,6 +116,15 @@ outOfBoundsCells <- which(values(fuelRaster) ==0) # inactive sites and out of sq
 inSquareInactiveCells <- (setdiff(outOfBoundsCells, outOfSquareCells )) # insquare cells that are inactive 
 unforestedCells <- which(values(fuelRaster) == 1) # un forested cells 
 wildernessCells <- which(values(luMaster)== 1111) # | values == 111 # both values are wilderness area cells (111 is only 4 cells though) 
+
+
+# set up limits for cutting on private and forest service
+#total cells active cells -- 300*312 - length(inSquareInactiveCells) - length(outOfSquareCells) = 54271  # this might be wrong it might be  57391
+# 54271*.05 = 2714 
+maxPercentCut <- .075 #max percent of cells that will be cut each year 
+maxCutCells<- nrow*ncol - length(inSquareInactiveCells) - length(outOfSquareCells)  * maxPercentCut 
+fsLimit<- floor(maxCutCells * 0.6766776) #(30414+12080)/(14464+5836+4 +30414+12080) #these numbers come from freq(luMaster)
+privateLimit <- floor(maxCutCells* 0.3233224) # (14464+5836+4)/(14464+5836+4 +30414+12080)
 
 
 #delete cuts that are older than 15 years 
@@ -175,7 +178,7 @@ if (!ONLYFIREBREAK){
   #where 5 is the mean and median and 29/57 cells need fire as thresholds for cutting.  
   #proximityToDevelopmentCells <- adjacent(developRaster, sumTable$cell[sumTable$mean>4 | sumTable$median>4 | sumTable$count >= 29], directions=neighborhoodMatrix, pairs=F, target=NULL, sorted=T,  include=FALSE, id=T)
   proximityToDevelopmentCells <- adjacent(developRaster, sumTable$cell[ sumTable$count >= 29], directions=neighborhoodMatrix, pairs=F, target=NULL, sorted=T,  include=FALSE, id=T)
-
+  
   print(paste(length(proximityToDevelopmentCells), "cells identified because of fire that is near developed cells"))
   
   linesLog <- c(linesLog, paste(length(proximityToDevelopmentCells), "cells identified because of fire that is near developed cells"))
@@ -221,17 +224,17 @@ if (!ONLYFIREBREAK){
   # Section - get fuel break cuts ---- 
   
   #if (timestep%%3 ==0){
-    source("FindFuelBreaks.R")
-    
-    #slim down the size of so that we are only planning fuel breaks on the private side of the land
-    tempFuelRas <- fuelRaster
-    vals <- values(tempFuelRas)
-    matVals <- matrix(vals, nrow=ncol, ncol=nrow) # have to flip nrow and ncol for raster to matrix conversion 
-    matVals[1:95,]<- 0 #95 is about where there forest service land stops and and the private land begins in the land use map. 
-    values(tempFuelRas)<- as.vector(matVals)
-
-    fuelBreaks <- findFuelBreaks(tempFuelRas, fuelValsToConsider= (c(1:6,10,11)+1), minCellsConnect=20, numFuelsToSplit=2, numOfLargestFuelsToPickFrom=8, rownum=ncol, colnum =  nrow)# have to flip nrow and ncol for the raster to matrix conversion
-    values(dR)[which(!is.na(values(fuelBreaks)))] <- 155
+  source("../FindFuelBreaks.R")
+  
+  #slim down the size of so that we are only planning fuel breaks on the private side of the land
+  tempFuelRas <- fuelRaster
+  vals <- values(tempFuelRas)
+  matVals <- matrix(vals, nrow=ncol, ncol=nrow) # have to flip nrow and ncol for raster to matrix conversion 
+  matVals[1:95,]<- 0 #95 is about where there forest service land stops and and the private land begins in the land use map. 
+  values(tempFuelRas)<- as.vector(matVals)
+  
+  fuelBreaks <- findFuelBreaks(tempFuelRas, fuelValsToConsider= (c(1:6,10,11)+1), minCellsConnect=20, numFuelsToSplit=15, numOfLargestFuelsToPickFrom=30, rownum=ncol, colnum =  nrow, tabuListPath=tabuListPath)# have to flip nrow and ncol for the raster to matrix conversion
+  values(dR)[which(!is.na(values(fuelBreaks)))] <- 155
   #}
   
   
@@ -268,22 +271,31 @@ values(dR)[intersect(which(values(dR)==155), FS)] <- 156
 #Section - clear fire breaks on federal land and put in the permanant ones (if permanent cuts are one). ---- 
 if (PERMANENTFSFIREBREAKS)
 {
-  values(dR)[which(values(dR) == 156)] <- 1 # Clear fire breaks made on federal land (set to forest growth)
+  timeskip <- suppressWarnings( na.omit(as.numeric(unlist(strsplit(grep("Timestep",readLines(landUseParameterFilePath), value=T)," "))))[1])
   
-  fsCutVals <- 
-    if (timestep%%10 == 1) {
-      fsCutRaster <- raster(fsCutPath)
-      permanentCutCells <- which(values(fsCutRaster)==101 | values(fsCutRaster)==99) 
-      values(dR)[permanentCutCells] <- 156 # cut the permanent cuts
-    } else if (timestep %% 10 == 4) {
-      fsCutRaster <- raster(fsCutPath)
-      permanentCutCells <- which(values(fsCutRaster) ==102 | values(fsCutRaster==50)) 
-      values(dR)[permanentCutCells] <- 156 # cut the permanent cuts
-    }else if (timestep %% 10 == 8) {
-      fsCutRaster <- raster(fsCutPath)
-      permanentCutCells <- which(values(fsCutRaster) ==103| values(fsCutRaster==98)) 
-      values(dR)[permanentCutCells] <- 156 # cut the permanent cuts
-    }
+  
+  values(dR)[which(values(dR) == 156)] <- 1 # Clear fire breaks made on federal land (set to forest growth)
+  if (timeskip==1){
+    fsCutVals <- 
+      if (timestep%%10 == 1) {
+        fsCutRaster <- raster(fsCutPath)
+        permanentCutCells <- which(values(fsCutRaster)==101 | values(fsCutRaster)==99) 
+        values(dR)[permanentCutCells] <- 156 # cut the permanent cuts
+      } else if (timestep %% 10 == 4) {
+        fsCutRaster <- raster(fsCutPath)
+        permanentCutCells <- which(values(fsCutRaster) ==102 | values(fsCutRaster==50)) 
+        values(dR)[permanentCutCells] <- 156 # cut the permanent cuts
+      }else if (timestep %% 10 == 8) {
+        fsCutRaster <- raster(fsCutPath)
+        permanentCutCells <- which(values(fsCutRaster) ==103| values(fsCutRaster==98)) 
+        values(dR)[permanentCutCells] <- 156 # cut the permanent cuts
+      }
+  }
+  else {
+    fsCutRaster <- raster(fsCutPath)
+    permanentCutCells <- which(values(fsCutRaster)==101 | values(fsCutRaster)==99|values(fsCutRaster) ==102 | values(fsCutRaster==50) | values(fsCutRaster) ==103| values(fsCutRaster==98)) 
+    values(dR)[permanentCutCells] <- 156 # cut the permanent cuts
+  }
 }
 
 
@@ -292,7 +304,8 @@ if (PERMANENTFSFIREBREAKS)
 if(length(pri) > privateLimit)
 {
   numToRemove<- length(pri) - privateLimit
-  values(dR)[pri[sample(1:length(pri), numToRemove)]] <- 1
+  
+  values(dR)[pri[sample(1:length(pri), numToRemove, replace=F)]] <- 1
   
   print(paste("Reached private cut limit. Removing",numToRemove,"proposed cuts."))
   linesLog <- c(linesLog, paste("Reached private cut limit. Removing",numToRemove,"proposed cuts."))
@@ -336,14 +349,6 @@ timestepData <- data.frame(TimeStep= timestep, CellsCut = cutsMade,FSCuts=length
 
 print(freq(dR))
 
-if (F){ # printing out graphs at each time step 
-  somePDFPath = paste0("C:/Users/hfintern/Desktop/Results/plot-", timestep,".pdf")
-  pdf(file=somePDFPath)  
-  plot(severityRaster, main=paste0("Severity-", timestep))
-  plot(fuelRaster, main=paste0("FuelTypes-", timestep))
-  plot(dR, main=paste0("landUse-", timestep))
-  dev.off() 
-}
 
 writeRaster(dR, luOutputPath, overwrite = T,format="HFA", datatype="INT2S", NAvalue=0)
 writeRaster(cutHistory, cutHistoryPath, overwrite =T, format="HFA", datatype="INT2S", NAvalue=0)
@@ -356,5 +361,5 @@ end_time <- Sys.time()
 total_time <- end_time - start_time
 linesLog <- c(linesLog, paste("total time taken",total_time))
 linesLog<- c(linesLog," ",paste("END OF TIMESTEP",timestep),"********************************************")
-write(linesLog, paste0("logs/logfile",".txt"), append=T)
+write(linesLog, logTxtPath, append=T)
 print(total_time)
