@@ -1,0 +1,76 @@
+7 variables (excluding dimension variables):
+
+
+                   float TAMAX[x,y,time]   
+long_name: Avg Max Aneom Temperature
+units: C
+valid_range: -60
+valid_range: 60
+missing_value: -999
+_FillValue: -999
+actual_range: -39.3002586364746
+actual_range: 50.854907989502
+coordinates: time y x 
+grid_mapping: Lambert_Conformal
+
+
+                    char Lambert_Conformal[]   
+grid_mapping_name: lambert_conformal_conic
+standard_parallel: 30
+standard_parallel: 60
+longitude_of_central_meridian: -118.699996948242
+latitude_of_projection_origin: 35
+_CoordinateTransformType: Projection
+_CoordinateAxisTypes: GeoX GeoY
+
+
+                  double lat[x,y]   
+units: degrees_north
+long_name: latitude coordinate
+standard_name: latitude
+_CoordinateAxisType: Lat
+
+
+                      double lon[x,y]   
+units: degrees_east
+long_name: longitude coordinate
+standard_name: longitude
+_CoordinateAxisType: Lon
+
+                      float TAMIN[x,y,time]   
+long_name: Avg Min Aneom Temperature
+units: C
+valid_range: -60
+valid_range: 60
+missing_value: -999
+_FillValue: -999
+actual_range: -48.4781150817871
+actual_range: 33.8350601196289
+coordinates: time y x 
+grid_mapping: Lambert_Conformal
+
+
+                    float SWI[x,y,time]   
+long_name: Solar Incident
+units: W/m2
+valid_range: -1
+valid_range: 1400
+missing_value: -999
+_FillValue: -999
+actual_range: 10.7582712173462
+actual_range: 412.453094482422
+coordinates: time y x 
+grid_mapping: Lambert_Conformal
+
+                      
+                      float RT[x,y,time]   
+long_name: Total Precipitation
+units: mm/day
+valid_range: -1
+valid_range: 2500
+missing_value: -999
+_FillValue: -999
+actual_range: -2.15571036511632e-16
+actual_range: 140.928970336914
+coordinates: time y x 
+grid_mapping: Lambert_Conformal

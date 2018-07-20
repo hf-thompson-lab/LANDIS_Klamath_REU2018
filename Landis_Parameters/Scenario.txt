@@ -1,0 +1,26 @@
+LandisData  Scenario
+
+Duration  90
+
+Species   Species.txt
+
+Ecoregions      Ecoregions.txt
+EcoregionsMap    clippedRaster/ecoregSA3.tif
+
+CellLength  270 << meters 
+
+>> Succession Extension    	 Initialization File
+>> --------------------     	-------------------
+     "PnET-Succession" "Klamath_PnET_succession.txt" 
+
+>> Disturbance Extensions  	 Initialization File
+>> ----------------------   	-------------------
+    "Dynamic Fuel System"	Dynamic_Leaf_Biomass_Fuels.txt
+    "Dynamic Fire System"	Dynamic_Fire_E4_270m.txt
+    "Land Use 2.0" 		 "land-use-FireManagement.txt"  
+
+>> Other Extensions         	Initialization File
+>> ----------------         	-------------------
+     "Output-PnET" "pnet_biomass_output_landscape.txt"
+
+RandomNumberSeed 3333

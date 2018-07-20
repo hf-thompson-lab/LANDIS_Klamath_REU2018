@@ -1,0 +1,3 @@
+TITLE Klamath_SA3_10YearTimeSteps_A2Climate_Fire_LandUse_Example
+call landis-ii Scenario.txt
+pause

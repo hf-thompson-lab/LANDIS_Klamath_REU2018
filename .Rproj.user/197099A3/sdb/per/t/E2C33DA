@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "#Evan Waldmann\n#6/28/18\n\n# Useful code with descriptions \n\n\n## Section - ploting with pauses ---- \nsim <- function(path, n=100, pause=0.25) {\n  for (i in 1:n) {\n    x<- raster(paste0(path,i,\".img\"))\n    plot(x, legend=T, asp=NA, main=i)\n    dev.flush()\n    Sys.sleep(pause)\n  }\n  invisible(x)\n}\n\n\nsetwd(\"C:/Users/hfintern/Desktop/Klamath_ForestXSiskiyouCounty/Saved Output/PnET+Fire+Fuel+NoClimate 50Years/\")\nsetwd(\"C:/Users/hfintern/Desktop/Klamath_ForestXSiskiyouCounty/7-10 test/land-use-maps/\")\nsim(path = \"land-use-\", n=91, pause=1)\n\n\n###########################################################\n# Changing initial map codes to exclude all but 5 species #----\n###########################################################\ndir<- \"C:/Users/hfintern/Desktop/movedFiles/BASE_historicalClimate/ICsimplified_E4_v3_270M.txt\"\nwritedir<- \"C:/Users/hfintern/Desktop/ICsimplified_E4_v4_270M_5Species.txt\"\ndir\n\nlines<- readLines(dir)\nlines\n\nspeciesToKeep<- c(\"LandisData\", \"MapCode\",\"ABGRC\",\"ACMA3\",\"ALRU2\",\"PSME\",\"PIMO3\")\nfor (i in 1: length(lines))\n{\n  flag <- FALSE \n  for (j in 1:length(speciesToKeep))\n  {\n    if (grepl(speciesToKeep[j], lines[i])) #looks for all the species and changes flag if we should keep the line\n    {\n      flag<- TRUE\n    }\n  }\n  if (!flag) #if line was not flagged then delete it. \n  {\n    lines[i] <- \"\" \n  }\n}\nwriteLines(lines, writedir)\n\n\n# masking the empty inital communites out\n\ngetwd()\nroot.path <- \"C:/Users/hfintern/Desktop/\"\ninitialCommFilePath<- \"ICsimplified_E4_v4_270M_5Species.txt\"\nsetwd(root.path) \n\nlines<- readLines(initialCommFilePath)\nlines\nnewLines <- lines[ lines!=\"\" ] \nnewLines\nboolVect <- grepl(\"MapCode\" , newLines)\nnewVect <- rep(F, length(boolVect))\n\nfor (i in 1:(length(boolVect)-1))\n{\n  \n  if (boolVect[i] ==T & boolVect[i+1]==T)\n  {\n    newVect[i] <- T \n  }\n  \n}\n\ncodes <- newLines[newVect]\n\ncodes <- as.numeric(substring(codes,9))\n\n\ninitCommRaster <- raster(\"initComClipped16S.img\")\nplot(initCommRaster)\nvalues(initCommRaster)[which(values(initCommRaster) %in% codes)] <- 5000\n\n\necoReg <- raster(\"ecoregclip.tif\")\nplot(ecoReg)\nfreq(ecoReg)\nvalues(ecoReg)[which(values(initCommRaster) ==5000)] <- NA\n\nwriteRaster(ecoReg, \"ecoregclipMasked\", overwrite =T, format=\"HFA\", datatype=\"INT2S\", NAvalue=0)\n\n# i then had to drag map into arc map and use copy raster to get landis to read it properly \n\n#masking empty initial communitites END \n\n",
+    "created" : 1532108179664.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2563484994",
+    "id" : "E2C33DA",
+    "lastKnownWriteTime" : 1532108106,
+    "last_content_update" : 1532108106,
+    "path" : "C:/Users/hfintern/Desktop/LANDIS_Klamath_REU2018/usefulCodeSnippets.R",
+    "project_path" : "usefulCodeSnippets.R",
+    "properties" : {
+    },
+    "relative_order" : 7,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

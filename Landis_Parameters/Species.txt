@@ -1,0 +1,29 @@
+LandisData	Species											
+>> set of species for Extent 3S												
+												
+												
+>>				Sexual	Shade	Fire	Seed Disp Dist	Veg		Sprout	Age	Post-Fire
+>>	Name		Long	Maturit	Tol.	Tol.	Effecti	Maximum	Rep P	Min	Max	Regen
+>>	----		-------	-----	-----	----	------  -------	-----	----	-----	--------	
+	ABGRC		500	35	3	3	30	500	0	0	0	none     
+>>	ABPRSH		650	40	3	3	30	500	0	0	0	none  
+	ACMA3		350	10	1	2	50	250	0.4	1	300	resprout 
+	ALRU2		250	7	2	2	400	1000	0.2	2	200	resprout
+>>	ARME		350	5	3	2	200	800	0.8	4	300	resprout
+>>	CADE27		650	30	3	5	30	2000	0	0	0	none 
+>>	CHCH7		250	40	3	3	100	800	0.8	2	200	resprout
+>>	FX_Resp_Deciduous 		250	2	2	1	30	500	0.75	5	200	resprout
+>>	FX_Seed_Deciduous		250	2	2	1	30	800	0	0	200	none
+>>	FX_Seed_Evergreen		250	2	2	1	30	800	0	0	200	none
+>>	LIDE3		250	3	4	3	100	400	0.8	2	200	resprout
+>>	NoFX_Resp_Deciduous		250	2	2	1	30	550	0.85	5	200	resprout 
+>>	NoFX_Resp_Evergreen		250	2	2	1	30	550	0.85	5	200	resprout 
+>>	NoFX_Seed_Deciduous		250	2	2	1	30	1000	0	0	200	none
+>>	NoFX_Seed_Evergreen		250	2	2	1	30	1000	0	0	200	none
+>>	PILA		750	20	3	4	30	400	0	0	700	none     
+	PIMO3		600	18	3	4	30	800	0	0	550	none
+>>	PIPO		850	25	4	4	50	300	0	0	800	none     
+	PSME		650	15	3	3	140	2000	0	0	600	none
+>>	QUCH2  		250	20	3	2	30	1000	0.95	1	200	resprout
+>>	QUGA4		350	40	2	2	100	400	0.8	3	300	resprout
+>>	QUKE		300	30	3	2	100	400	0.9	3	250	resprout

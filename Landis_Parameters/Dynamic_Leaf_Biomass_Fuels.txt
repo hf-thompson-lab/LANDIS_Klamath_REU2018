@@ -1,0 +1,52 @@
+LandisData  "Dynamic Fuel System"
+>> LandisData  "Dynamic Fuel System"
+>> From Sierra Nevada LANDIS work
+
+Timestep  10
+
+>> Species Fuel Coefficients (default value 1 if not listed)
+>> 		 Fuel 
+>> Species 	 Coefficient 
+>> -------- 	 ----------- 
+
+HardwoodMaximum 15 << required
+
+DeadFirMaxAge 25 << required
+
+FuelTypes
+
+>> Fuel Base	Age Range	Species
+>> Type	Type
+>> ---  ------	---------	----------------------------------------
+   1	Conifer	0 to 40		ABGRC PSME <<ABPRSH CADE27 PSME << young mixed conifer - from SN
+   2	Conifer	41 to 80	ABGRC PSME <<ABPRSH CADE27 PSME << mid-aged mixed conifer - from SN
+   3	Conifer	81 to 3000	ABGRC PSME <<ABPRSH CADE27 PSME << old mixed conifer - from SN
+
+   4	Conifer	0 to 40		PIMO3 <<PILA PIMO3 PIPO << young pine - from SN pine/white fir
+   5	Conifer	41 to 80	PIMO3 <<PILA PIMO3 PIPO << mid-aged pine - from SN pine/white fir
+   6	Conifer	81 to 1500	PIMO3 <<PILA PIMO3 PIPO << old pine - from SN pine/white fir
+	
+>>   7	Conifer	0 to 40		ChamLaws SequSemp ThujPlic TsugHete << young cedar/hemlock/sequoia - from SN young sequoia
+>>   8	Conifer	41 to 80	ChamLaws SequSemp ThujPlic TsugHete << mid-aged cedar/hemlocksequoia - from SN mid-aged sequoia
+>>   9	Conifer	81 to 3000	ChamLaws SequSemp ThujPlic TsugHete << old cedar/hemlocksequoia - from SN old sequoia
+
+  10	Deciduous 0 to 40	ACMA3 ALRU2 << young deciduous - from SN <<10
+  11	Deciduous 41 to 1000	ACMA3 ALRU2 << old deciduous - from SN  <<11
+
+
+>> 12	Deciduous 0 to 1000	ARME CHCH7 LIDE3 QUCH2 QUGA4 QUKE << oak - from NJ oak upland (TL6)
+
+>>  13	Conifer  0 to 1000	FX_Resp_Deciduous FX_Seed_Deciduous NoFX_Resp_Deciduous NoFX_Seed_Deciduous << oak - from NJ oak upland (TL6)
+>>  14	Conifer  0 to 1000	FX_Seed_Evergreen NoFX_Resp_Evergreen NoFX_Seed_Evergreen << oak - from NJ oak upland (TL6)
+
+
+
+DisturbanceConversionTable
+
+
+MapFileNames		../Landis_Outputs/fire/fuels/FuelType-{timestep}.img  
+
+
+PctConiferFileName ../Landis_Outputs/fire/PctConifer-{timestep}.img
+
+PctDeadFirFileName ../Landis_Outputs/fire/PctDeadFir-{timestep}.img

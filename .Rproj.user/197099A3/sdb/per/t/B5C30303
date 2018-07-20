@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "#Multiplying the prec column by the number of days in each month in all of the Ecoregions \n#fles are in the PnET Climate data format\n\npathToClimateFiles<- \"C:/Users/hfintern/Desktop/climate_noClimateChange_scenario_redo\"\necoFiles <- list.files(path=pathToClimateFiles,pattern = \"_noChange_climate_PnET.txt\")\ndir.create(\"C:/Users/hfintern/Desktop/climate_noClimateChange_scenario_convertedPAR_secondredo\")\n\n\nisLeapYear <- function(year){ return( ( ((year) %% 4 == 0) & ((year) %% 100 != 0)) | ((year) %% 400 == 0) ) }\n\nfor (j in 1:length(ecoFiles))\n{\n  #read in the text file \n  cTable <- read.table(file.path(pathToClimateFiles,ecoFiles[j]) , header =T)\n  cTableBegin <-cTable[1:12,] \n  cTableEnd <- cTable[13:length(cTable$Year),]\n  \n  #multiply the precipation values of specific months by the number of days in those months \n  #take into account leap years \n  d.31 <- c(1,3,5,7,8,10,12)\n  d.30 <- c(4,6,9,11)\n  \n  cTableBegin$Prec[which( cTableBegin$Month ==2 )] <- cTableBegin$Prec[which( cTableBegin$Month ==2)]*28\n  cTableBegin$Prec[which( cTableBegin$Month %in% d.31 )] <- cTableBegin$Prec[which( cTableBegin$Month %in% d.31 )]*31\n  cTableBegin$Prec[which( cTableBegin$Month %in% d.30 )] <- cTableBegin$Prec[which( cTableBegin$Month %in% d.30 )]*30\n  \n  #feb has an extra day in a leap year\n  cTableEnd$Prec[which(isLeapYear(as.numeric(as.character(cTableEnd$Year))) & cTableEnd$Month == 2 )] <- cTableEnd$Prec[which(isLeapYear(as.numeric(as.character(cTableEnd$Year))) & cTableEnd$Month == 2 )]*29\n\n  cTableEnd$Prec[which( !isLeapYear(as.numeric(as.character(cTableEnd$Year))) & cTableEnd$Month == 2 )] <- cTable$Prec[which( !isLeapYear(as.numeric(as.character(cTableEnd$Year))) & cTableEnd$Month == 2 )]*28\n  \n  #31 and 30 days in all the other months     \n  cTableEnd$Prec[which( cTableEnd$Month %in% d.31 )] <- cTableEnd$Prec[which( cTableEnd$Month %in% d.31 )]*31\n    \n  cTableEnd$Prec[which( cTableEnd$Month %in% d.30 )] <- cTableEnd$Prec[which( cTableEnd$Month %in% d.30 )]*30\n\n  #combine the cTable to what it once was \n  newcTable <- rbind(cTableBegin, cTableEnd)\n\n  #write to file \n\n  climatedir<- paste0(\"C:/Users/hfintern/Desktop/climate_noClimateChange_scenario_convertedPAR_secondredo/\", substring(ecoFiles[j] , 1, 5), \"_noChange_climate_PnET.txt\")\n  write.table(newcTable, file = climatedir,row.names = F, quote = F)\n}\n\n\n",
+    "created" : 1532108176166.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "730239974",
+    "id" : "B5C30303",
+    "lastKnownWriteTime" : 1532108106,
+    "last_content_update" : 1532108106,
+    "path" : "C:/Users/hfintern/Desktop/LANDIS_Klamath_REU2018/fixingPrec.R",
+    "project_path" : "fixingPrec.R",
+    "properties" : {
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

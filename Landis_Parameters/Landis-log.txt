@@ -1,0 +1,417 @@
+2018-07-20 13:37:24,765 - LANDIS-II 6.2 (beta release 1)
+2018-07-20 13:37:24,779 - 
+2018-07-20 13:37:24,931 - Loading scenario from file "Scenario.txt" ...
+2018-07-20 13:37:25,011 - Initialized random number generator with user-supplied seed = 3,333
+2018-07-20 13:37:25,011 - Loading species data from file "Species.txt" ...
+2018-07-20 13:37:25,040 - Loading ecoregions from file "Ecoregions.txt" ...
+2018-07-20 13:37:25,066 - Initializing landscape from ecoregions map "clippedRaster/ecoregSA3.tif" ...
+2018-07-20 13:37:25,083 - Cell length = 270 m, cell area = 7.29 ha
+2018-07-20 13:37:25,085 - Map dimensions: 101 rows by 205 columns = 20,705 cells
+2018-07-20 13:37:25,096 - Sites: 18,936 active (91.5 %), 1,769 inactive (8.5 %)
+2018-07-20 13:37:25,111 - Loading PnET-Succession extension ...
+2018-07-20 13:37:25,178 - Initializing PnET-Succession version 2.1.1.18994
+2018-07-20 13:37:25,492 - Eco	Soilt	WiltPnt	FieldCap(mm)	FC-WP	Porosity
+2018-07-20 13:37:25,494 - eco12	LOAM	135.1101	285.9272	150.8171	473.6801
+2018-07-20 13:37:25,494 - eco13	LOAM	135.1101	285.9272	150.8171	473.6801
+2018-07-20 13:37:25,494 - eco14	LOAM	135.1101	285.9272	150.8171	473.6801
+2018-07-20 13:37:25,494 - eco15	LOAM	135.1101	285.9272	150.8171	473.6801
+2018-07-20 13:37:25,494 - eco22	LOAM	135.1101	285.9272	150.8171	473.6801
+2018-07-20 13:37:25,494 - eco23	LOAM	135.1101	285.9272	150.8171	473.6801
+2018-07-20 13:37:25,494 - eco25	LOAM	135.1101	285.9272	150.8171	473.6801
+2018-07-20 13:37:25,494 - eco34	LOAM	135.1101	285.9272	150.8171	473.6801
+2018-07-20 13:37:25,494 - eco35	LOAM	135.1101	285.9272	150.8171	473.6801
+2018-07-20 13:37:25,494 - eco42	SILO	128.5943	341.0858	212.4914	505.0321
+2018-07-20 13:37:25,494 - eco43	LOAM	135.1101	285.9272	150.8171	473.6801
+2018-07-20 13:37:25,494 - eco45	LOAM	135.1101	285.9272	150.8171	473.6801
+2018-07-20 13:37:25,494 - eco55	CLAY	321.0327	439.9316	118.8989	530.9595
+2018-07-20 13:37:25,515 -    Registering Data:  TimeOfLastSuccession.
+2018-07-20 13:37:25,516 -    Registering Data:  Shade.
+2018-07-20 13:37:25,518 -    Creating Dispersal Neighborhood List.
+2018-07-20 13:37:25,518 -    Dispersal:  NeighborRadius=2135, CellLength=270, numCellRadius=7
+2018-07-20 13:37:25,533 - Spinning up biomass
+2018-07-20 13:37:25,535 -    Loading initial communities from file "ICsimplified_E4_v4_270M_5Species.txt" ...
+2018-07-20 13:37:25,580 -    Reading initial communities map "clippedRaster/initCommRasterFILLED.img" ...
+2018-07-20 13:39:41,073 -    Registering Data:  Succession.BiomassCohorts.
+2018-07-20 13:39:41,074 -    Registering Data:  Succession.WoodyDebris.
+2018-07-20 13:39:41,074 -    Registering Data:  Succession.Litter.
+2018-07-20 13:39:41,076 -    Registering Data:  Succession.AgeCohorts.
+2018-07-20 13:39:41,079 -    Registering Data:  Succession.CohortsPnET.
+2018-07-20 13:39:41,082 - Loading Dynamic Fuel System extension ...
+2018-07-20 13:39:41,088 -    Registering Data:  Fuels.CFSFuelType.
+2018-07-20 13:39:41,088 -    Registering Data:  Fuels.DecidFuelType.
+2018-07-20 13:39:41,088 -    Registering Data:  Fuels.PercentConifer.
+2018-07-20 13:39:41,089 -    Registering Data:  Fuels.PercentHardwood.
+2018-07-20 13:39:41,089 -    Registering Data:  Fuels.PercentDeadFir.
+2018-07-20 13:39:41,103 -    Reading in the Fuel Assignment table...
+2018-07-20 13:39:41,111 -    Reading in the Harvest Conversion table...
+2018-07-20 13:39:41,111 -    Reading in map names...
+2018-07-20 13:39:41,117 - Loading Dynamic Fire System extension ...
+2018-07-20 13:39:41,165 -    Registering Data:  Fire.FireRegion.
+2018-07-20 13:39:41,166 -    Registering Data:  Fire.FireRegion2.
+2018-07-20 13:39:41,167 -    Registering Data:  Fire.Severity.
+2018-07-20 13:39:41,167 -    Registering Data:  Fire.LastSeverity.
+2018-07-20 13:39:41,167 -    Registering Data:  Fire.TimeOfLastEvent.
+2018-07-20 13:39:41,201 -    Loading FireRegion data...
+2018-07-20 13:39:41,223 -    Loading Slope data...
+2018-07-20 13:39:41,228 -    Loading Azimuth data...
+2018-07-20 13:39:41,232 -    Loading Seasons data...
+2018-07-20 13:39:41,243 -    Loading Fuels data...
+2018-07-20 13:39:41,256 -    Loading Fire Damage data...
+2018-07-20 13:39:41,264 -    Loading Weather Data...
+2018-07-20 13:39:41,271 - Loading Land Use 2.0 extension ...
+2018-07-20 13:39:41,281 -   Loading parameters from land-use-FireManagement.txt
+2018-07-20 13:39:41,385 -    Initializing Fire Events...
+2018-07-20 13:39:41,393 - Initializing Land Use...
+2018-07-20 13:39:41,394 -    Registering Data:  LandUse.AllowHarvest.
+2018-07-20 13:39:41,400 -   Reading map "../Landis_Outputs/land-use-maps/land-use-0.img"...
+2018-07-20 13:39:41,418 -     NA values -- Forest Growth (11,347)
+2018-07-20 13:39:41,419 -     Forest Growth (7,589)
+2018-07-20 13:39:41,419 - Loading Output-PnET extension ...
+2018-07-20 13:39:41,460 -    Generating summary table...
+2018-07-20 13:39:41,494 - Running Output-PnET ...
+2018-07-20 13:39:42,225 - Current time: 10
+2018-07-20 13:39:42,226 - Running Dynamic Fuel System ...
+2018-07-20 13:39:42,231 -   Calculating the Dynamic Fuel Type for all active cells...
+2018-07-20 13:39:42,286 -    Writing Fuel map to ../Landis_Outputs/fire/fuels/FuelType-10.img ...
+2018-07-20 13:39:42,314 -    Writing % Conifer map to ../Landis_Outputs/fire/PctConifer-10.img ...
+2018-07-20 13:39:42,334 -    Writing % Dead Fir map to ../Landis_Outputs/fire/PctDeadFir-10.img ...
+2018-07-20 13:39:42,354 - Running Dynamic Fire System ...
+2018-07-20 13:39:42,369 -    Initializing Fuel Type.
+2018-07-20 13:39:42,375 -    Processing landscape for Fire events ...
+2018-07-20 13:39:42,375 -    Dynamic Fire:  Filling open types as needed ...
+2018-07-20 13:39:42,378 -    Dynamic Fire:  Igniting Fires ...
+2018-07-20 13:39:42,632 -    Writing Fire severity map to ../Landis_Outputs/fire/severity-10.img ...
+2018-07-20 13:39:42,656 -    Writing TimeOfLstFire output map to ./DFFS-output/TimeOfLastFire-10.img ...
+2018-07-20 13:39:42,685 - Running Land Use ...
+2018-07-20 13:39:42,686 - Current time: 
+2018-07-20 13:39:42,688 - Starting external process...
+2018-07-20 13:39:52,109 - [1] "2018-07-20 13:39:42 EDT"
+[1] "C:/Users/hfintern/Desktop/LANDIS_Klamath_REU2018/Landis_Parameters"
+[1] "Rasters Read!"
+[1] "242 cells identified because of fire that is near developed cells"
+[1] 2
+[1] 3
+[1] "bad -- too few fuels in fuel type. "
+[1] 4
+[1] "empty nfq - no connected components"
+[1] 5
+[1] "bad -- too few fuels in fuel type. "
+[1] 6
+[1] "bad -- too few fuels in fuel type. "
+[1] 7
+[1] "empty nfq - no connected components"
+[1] 11
+[1] "empty nfq - no connected components"
+[1] 12
+[1] "empty nfq - no connected components"
+   value count
+28   280   413
+27   270    69
+25   250    63
+26   260    63
+24   240    62
+23   230    60
+22   220    59
+21   210    58
+20   200    57
+19   190    52
+18   180    46
+17   170    44
+15   150    36
+16   160    36
+14   140    33
+13   130    30
+10   100    28
+11   110    28
+12   120    28
+8     80    27
+9     90    27
+7     70    26
+6     60    25
+4     40    24
+5     50    24
+3     30    23
+2     20    22
+1     10    21
+[1] "sampling  15  from this list"
+[1] 1
+[1] 2
+[1] 3
+[1] 4
+[1] 5
+[1] 6
+[1] 7
+[1] 8
+[1] 9
+[1] 10
+[1] 11
+[1] 12
+[1] 13
+[1] 14
+[1] 15
+   colEq rowEq step
+1     78   197  100
+2     89   184  200
+3     71   125  300
+4     66   185  400
+5     75   189  500
+6     95   118  600
+7     74   104  700
+8     86   200  800
+9     57   172  900
+10    86   166 1000
+11    68   106 1100
+12    60   191 1200
+13    77   112 1300
+14    98   196 1400
+15    92   197 1500
+[1] "cells cut: 618"
+[1] "ha cut: 4505.22"
+[1] "percent cut (total cells -OoB-UF-WA): 17.48%"
+     value count
+[1,]     0  1666
+[2,]     1 18421
+[3,]    20    45
+[4,]    21    28
+[5,]    30    10
+[6,]    31     8
+[7,]   155   247
+[8,]   156   280
+Time difference of 9.275695 secs
+
+2018-07-20 13:39:52,109 -   Reading map "../Landis_Outputs/land-use-maps/land-use-10.img"...
+2018-07-20 13:39:52,148 -     NA values -- Forest Growth --> Forest Growth (11,165)
+2018-07-20 13:39:52,148 -     NA values -- Forest Growth --> Fire Break for FS (182)
+2018-07-20 13:39:52,149 -     Forest Growth --> Fire Break for FS (69)
+2018-07-20 13:39:52,149 -     Forest Growth --> fire cutting - not steep (10)
+2018-07-20 13:39:52,149 -     Forest Growth --> fire cutting - steep (8)
+2018-07-20 13:39:52,150 -     Forest Growth --> Hand Thinning - Uplands (28)
+2018-07-20 13:39:52,150 -     Forest Growth --> Fire Break for private (247)
+2018-07-20 13:39:52,150 -     Forest Growth --> mechanical Thinning - Uplands (45)
+2018-07-20 13:39:52,150 - Running PnET-Succession ...
+2018-07-20 13:41:09,313 - Running Output-PnET ...
+2018-07-20 13:41:09,992 - Current time: 20
+2018-07-20 13:41:09,993 - Running Dynamic Fuel System ...
+2018-07-20 13:41:09,993 -   Calculating the Dynamic Fuel Type for all active cells...
+2018-07-20 13:41:10,059 -    Writing Fuel map to ../Landis_Outputs/fire/fuels/FuelType-20.img ...
+2018-07-20 13:41:10,079 -    Writing % Conifer map to ../Landis_Outputs/fire/PctConifer-20.img ...
+2018-07-20 13:41:10,098 -    Writing % Dead Fir map to ../Landis_Outputs/fire/PctDeadFir-20.img ...
+2018-07-20 13:41:10,116 - Running Dynamic Fire System ...
+2018-07-20 13:41:10,116 -    Initializing Fuel Type.
+2018-07-20 13:41:10,118 -    Processing landscape for Fire events ...
+2018-07-20 13:41:10,119 -    Dynamic Fire:  Filling open types as needed ...
+2018-07-20 13:41:10,121 -    Dynamic Fire:  Igniting Fires ...
+2018-07-20 13:41:10,241 -    Writing Fire severity map to ../Landis_Outputs/fire/severity-20.img ...
+2018-07-20 13:41:10,260 -    Writing TimeOfLstFire output map to ./DFFS-output/TimeOfLastFire-20.img ...
+2018-07-20 13:41:10,289 - Running Land Use ...
+2018-07-20 13:41:10,290 - Current time: 
+2018-07-20 13:41:10,290 - Starting external process...
+2018-07-20 13:41:20,443 - [1] "2018-07-20 13:41:10 EDT"
+[1] "C:/Users/hfintern/Desktop/LANDIS_Klamath_REU2018/Landis_Parameters"
+[1] "Rasters Read!"
+[1] "596 cells identified because of fire that is near developed cells"
+[1] 2
+[1] 3
+[1] 4
+[1] "empty nfq - no connected components"
+[1] 5
+[1] "empty nfq - no connected components"
+[1] 6
+[1] "empty nfq - no connected components"
+[1] 7
+[1] "bad -- too few fuels in fuel type. "
+[1] 11
+[1] "empty nfq - no connected components"
+[1] 12
+[1] "empty nfq - no connected components"
+   value count
+22   220  1624
+21   210   377
+30  1000   273
+20   200   103
+19   190    66
+18   180    57
+10   100    51
+17   170    50
+16   160    44
+15   150    42
+14   140    39
+29   900    37
+13   130    36
+12   120    35
+11   110    33
+28   800    32
+9     90    30
+7     70    29
+8     80    29
+27   700    29
+26   600    25
+24   400    24
+25   500    24
+6     60    23
+23   300    23
+4     40    22
+5     50    22
+1     10    21
+2     20    21
+3     30    21
+[1] "sampling  15  from this list"
+[1] 1
+[1] 2
+[1] 3
+[1] 4
+[1] 5
+[1] 6
+[1] 7
+[1] 8
+[1] 9
+[1] 10
+[1] 11
+[1] 12
+[1] 13
+[1] 14
+[1] 15
+   colEq rowEq step
+1     74   104  100
+2     48   191  200
+3     12   199  300
+4     85   172  400
+5     88   193  500
+6     59   152  600
+7     86   201  700
+8     58   187  800
+9     69   174  900
+10    95   183 1000
+11    68   150 1100
+12     4   186 1200
+13    80   146 1300
+14    79   183 1400
+15    36   128 1500
+[1] "removing private cuts ...."
+[1] "removing private cuts ...."
+[1] "removing private cuts ...."
+[1] "removing private cuts ...."
+[1] "removing private cuts ...."
+[1] "removing private cuts ...."
+[1] "removing private cuts ...."
+[1] "removing private cuts ...."
+[1] "removing private cuts ...."
+[1] "removing private cuts ...."
+[1] "removing private cuts ...."
+[1] "removing private cuts ...."
+[1] "removing private cuts ...."
+[1] "removing private cuts ...."
+[1] "removing private cuts ...."
+[1] "cells cut: 978"
+[1] "ha cut: 7129.62"
+[1] "percent cut (total cells -OoB-UF-WA): 9.25%"
+     value count
+[1,]     0  1666
+[2,]     1 18061
+[3,]    20   277
+[4,]    21   171
+[5,]    30   126
+[6,]    31    94
+[7,]   155    30
+[8,]   156   280
+Time difference of 10.00592 secs
+
+2018-07-20 13:41:20,443 -   Reading map "../Landis_Outputs/land-use-maps/land-use-20.img"...
+2018-07-20 13:41:20,458 -     Forest Growth --> Fire Break for private (30)
+2018-07-20 13:41:20,458 -     fire cutting - not steep --> Forest Growth (10)
+2018-07-20 13:41:20,458 -     fire cutting - steep --> Forest Growth (8)
+2018-07-20 13:41:20,458 -     Forest Growth --> fire cutting - steep (94)
+2018-07-20 13:41:20,458 -     Forest Growth --> fire cutting - not steep (126)
+2018-07-20 13:41:20,458 -     Hand Thinning - Uplands --> Forest Growth (28)
+2018-07-20 13:41:20,458 -     Fire Break for private --> Forest Growth (247)
+2018-07-20 13:41:20,458 -     mechanical Thinning - Uplands --> Forest Growth (45)
+2018-07-20 13:41:20,458 -     Forest Growth --> Hand Thinning - Uplands (171)
+2018-07-20 13:41:20,458 -     Forest Growth --> mechanical Thinning - Uplands (277)
+2018-07-20 13:41:20,458 - Running PnET-Succession ...
+2018-07-20 13:43:22,057 - Running Output-PnET ...
+2018-07-20 13:43:22,862 - Current time: 30
+2018-07-20 13:43:22,863 - Running Dynamic Fuel System ...
+2018-07-20 13:43:22,863 -   Calculating the Dynamic Fuel Type for all active cells...
+2018-07-20 13:43:22,946 -    Writing Fuel map to ../Landis_Outputs/fire/fuels/FuelType-30.img ...
+2018-07-20 13:43:22,965 -    Writing % Conifer map to ../Landis_Outputs/fire/PctConifer-30.img ...
+2018-07-20 13:43:22,984 -    Writing % Dead Fir map to ../Landis_Outputs/fire/PctDeadFir-30.img ...
+2018-07-20 13:43:23,003 - Running Dynamic Fire System ...
+2018-07-20 13:43:23,003 -    Initializing Fuel Type.
+2018-07-20 13:43:23,005 -    Processing landscape for Fire events ...
+2018-07-20 13:43:23,005 -    Dynamic Fire:  Filling open types as needed ...
+2018-07-20 13:43:23,008 -    Dynamic Fire:  Igniting Fires ...
+2018-07-20 13:43:23,166 -    Writing Fire severity map to ../Landis_Outputs/fire/severity-30.img ...
+2018-07-20 13:43:23,185 -    Writing TimeOfLstFire output map to ./DFFS-output/TimeOfLastFire-30.img ...
+2018-07-20 13:43:23,215 - Running Land Use ...
+2018-07-20 13:43:23,216 - Current time: 
+2018-07-20 13:43:23,216 - Starting external process...
+2018-07-20 13:43:33,949 - [1] "2018-07-20 13:43:23 EDT"
+[1] "C:/Users/hfintern/Desktop/LANDIS_Klamath_REU2018/Landis_Parameters"
+[1] "Rasters Read!"
+[1] "606 cells identified because of fire that is near developed cells"
+[1] 2
+[1] 3
+[1] 4
+[1] 5
+[1] "empty nfq - no connected components"
+[1] 6
+[1] "empty nfq - no connected components"
+[1] 7
+[1] "bad -- too few fuels in fuel type. "
+[1] 11
+[1] "empty nfq - no connected components"
+[1] 12
+[1] "empty nfq - no connected components"
+  value count
+4    40   188
+3    30    90
+6  1000    56
+2    20    37
+5   100    34
+1    10    22
+[1] "sampling  6  from this list"
+[1] 1
+[1] 2
+[1] 3
+[1] 4
+[1] 5
+[1] 6
+  colEq rowEq step
+1    96   127  100
+2    98   152  200
+3     9   196  300
+4    91   105  400
+5    79   134  500
+6    94   136  600
+[1] "removing private cuts ...."
+[1] "removing private cuts ...."
+[1] "removing private cuts ...."
+[1] "removing private cuts ...."
+[1] "removing private cuts ...."
+[1] "removing private cuts ...."
+[1] "cells cut: 923"
+[1] "ha cut: 6728.67"
+[1] "percent cut (total cells -OoB-UF-WA): 8.51%"
+     value count
+[1,]     0  1666
+[2,]     1 18116
+[3,]    20   240
+[4,]    21   215
+[5,]    30    67
+[6,]    31    98
+[7,]   155    23
+[8,]   156   280
+Time difference of 10.50889 secs
+
+2018-07-20 13:43:33,950 -   Reading map "../Landis_Outputs/land-use-maps/land-use-30.img"...
+2018-07-20 13:43:33,965 -     Fire Break for private --> Forest Growth (30)
+2018-07-20 13:43:33,965 -     Forest Growth --> Fire Break for private (23)
+2018-07-20 13:43:33,965 -     Forest Growth --> fire cutting - steep (98)
+2018-07-20 13:43:33,965 -     Forest Growth --> fire cutting - not steep (67)
+2018-07-20 13:43:33,965 -     Forest Growth --> mechanical Thinning - Uplands (240)
+2018-07-20 13:43:33,965 -     Forest Growth --> Hand Thinning - Uplands (215)
+2018-07-20 13:43:33,965 -     fire cutting - steep --> Forest Growth (94)
+2018-07-20 13:43:33,966 -     fire cutting - not steep --> Forest Growth (126)
+2018-07-20 13:43:33,966 -     Hand Thinning - Uplands --> Forest Growth (171)
+2018-07-20 13:43:33,966 -     mechanical Thinning - Uplands --> Forest Growth (277)
+2018-07-20 13:43:33,966 - Running PnET-Succession ...

@@ -1,0 +1,26 @@
+LandisData PnETSpeciesParameters
+
+PnETSpeciesParameters	KWdLit	FolLignin	H3	H4	FolN	SLWmax	SLWDel	TOfol	AmaxA	AmaxB	HalfSat		PsnTMin		PsnTOpt		k	FracBelowG	FracFol	FrActWd  DVPD1	DVPD2	<<old:FracBelowG
+ABGRC			0.1	0.2		100	150	1.08	790	.04	.14	5.3	21.5	200		-2		19		0.56	0.3		0.05	0.00005  .21	1   <<0.25
+ACMA3			0.1	0.2		100	150	1.9	75	.2	1	-46	71.9	200		0		22		0.58	0.3		0.05	0.00005  .05	2   <<0.33
+ALRU2			0.1	0.2		100	150	2.5	95	.2	1	-46	71.9	200		0		22		0.71	0.3		0.05	0.00005  .05	2   <<0.33
+PSME			0.1	0.2		100	150	1.2	205	.04	.22	5.3	21.5	200		-2		19		0.52	0.3		0.05	0.00005  .21	1   <<0.33
+PIMO3			0.1	0.2		100	150	1.18	170	.04	.29	5.3	21.5	200		0		20		0.46	0.3		0.05	0.00005  .21	1   <<0.33
+
+
+>>KWdLit default=0.1.  Use values from Mattson 1987 Decomposition of woody debris in a regenerating, 
+>>clear-cut forest in the Southern Appalachians when available.  Otherwise: 0.075 for hardwoods and 0.125 for softwoods
+>>FolLignin default = 0.02; Range in Aber and Mellilo (1982 Can J Bot 60:2267) = 0-0.25
+
+
+
+
+
+
+
+
+
+
+
+
+

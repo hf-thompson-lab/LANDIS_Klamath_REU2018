@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "#inset plots using example data sets\n\nlibrary(grid)\nlibrary(datasets)\nlibrary(ggplot2)\nlibrary(reshape2)\n\ndata(iris) # get example dataset\n\nmeltedIris <- melt(iris)\n\n#Main plot\ng <- ggplot(meltedIris, aes(Species, value))\ng <- g + geom_boxplot(aes(fill=factor(Species))) + theme_bw()+\n  theme(axis.text.x = element_text(angle=0, vjust=0.6)) +   theme(legend.position = c(0.315, 0.89)) + # legend position can be adjusted accordingly\n labs(title=\"graph title\", x=\"title\", fill = \"legend title\",y=\"y title\")#+\n#  scale_fill_manual(labels = c(\"A2 Climate\",\"A2 Climate & LU+\", \"Recent Trends\"), values=  hue_pal()(3))+  #these lines can be used to change the x labs or legend labels\n#  scale_x_discrete(labels= c(\"1\",\"2\",\"3\",\"4\",\"5 (All affected cohorts killed)\"))#, values= c(\"three\",\"four\", \"five\"))\n\n\n#get the total values for the bar plot \ntotalSumBars <- t(data.frame(totals= sapply( unique(meltedIris$Species), function(speci){\n  return(  sum(meltedIris$value[ meltedIris$Species == speci]) )\n})))\n\ncolnames(totalSumBars) <- unique(meltedIris$Species)\nbarplotDataMelt <- melt(totalSumBars)\nsubplot <- ggplot(barplotDataMelt, aes(Var2, value , fill=factor(Var2))) + theme_bw() +geom_bar(stat=\"identity\")+\n  theme(legend.position = \"none\") + labs(subtitle=\"small graph title\", y=\"small graph y axis\", x=\"small graph x axis\")+ \n  theme(axis.text.x =element_blank(), axis.ticks.x = element_blank(),text = element_text(size=9))\n\nvp <- viewport(width = 0.2, height = 0.2, x = .07,y = .76, just = c(\"left\",\"bottom\")) # view port determines the size of the small graph\nfull <- function() {\n  print(g)\n  theme_set(theme_bw(base_size = 8))\n  print(subplot, vp = vp)\n  theme_set(theme_bw())\n}\n\nfull() # this graphs the two together",
+    "created" : 1532108177312.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1360539692",
+    "id" : "7C61195",
+    "lastKnownWriteTime" : 1532108106,
+    "last_content_update" : 1532108106,
+    "path" : "C:/Users/hfintern/Desktop/LANDIS_Klamath_REU2018/insetGraphExample.R",
+    "project_path" : "insetGraphExample.R",
+    "properties" : {
+    },
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

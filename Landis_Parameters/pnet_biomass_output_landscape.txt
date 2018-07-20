@@ -1,0 +1,9 @@
+LandisData  "Output-PnET"
+Timestep  10 
+Species   ALL
+	 
+  Biomass	../Landis_Outputs/output/biomass/{species}/biomass{timestep}.img   
+  AbovegroundBiomass ../Landis_Outputs/output/agbiomass/{species}/AGBiomass_{timestep}.img   
+  AgeDistribution ../Landis_Outputs/output/AgeDist/Age{timestep}.img
+  CohortBalance	"../Landis_Outputs/output/TotalCohorts.txt"
+

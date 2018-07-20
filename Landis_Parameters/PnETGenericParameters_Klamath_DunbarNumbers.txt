@@ -1,0 +1,11 @@
+LandisData PnETGenericParameters
+PnETGenericParameters Value
+
+>>Dunbar's numbers 
+>>HalfSat				200
+WUECnst				10.9
+Q10				2
+CFracBiomass			.45
+BFolResp			0.1
+>>FracBelowG			.3
+>>PrecIntConst			.2 <<would not work in the species specific parameters 

@@ -1,0 +1,55 @@
+LandisData  EcoregionParameters						
+EcoregionParameters	PrecLossFrac	climateFileName	SoilType	RootingDepth	LeakageFrac	SnowSublimFrac
+eco11	0.02	climate_noClimateChange_scenario_secondredo/eco11_noChange_climate_PnET.txt	SILO	1000	1	0.15
+eco12	0.02	climate_noClimateChange_scenario_secondredo/eco12_noChange_climate_PnET.txt	LOAM	1000	1	0.15
+eco13	0.02	climate_noClimateChange_scenario_secondredo/eco13_noChange_climate_PnET.txt	LOAM	1000	1	0.15
+eco14	0.02	climate_noClimateChange_scenario_secondredo/eco14_noChange_climate_PnET.txt	LOAM	1000	1	0.15
+eco15	0.02	climate_noClimateChange_scenario_secondredo/eco15_noChange_climate_PnET.txt	LOAM	1000	1	0.15
+eco21	0.02 	climate_noClimateChange_scenario_secondredo/eco21_noChange_climate_PnET.txt	SILO	1000	1	0.15
+eco22	0.02	climate_noClimateChange_scenario_secondredo/eco22_noChange_climate_PnET.txt	LOAM	1000	1	0.15
+eco23	0.02	climate_noClimateChange_scenario_secondredo/eco23_noChange_climate_PnET.txt	LOAM	1000	1	0.15
+eco24	0.02	climate_noClimateChange_scenario_secondredo/eco24_noChange_climate_PnET.txt	LOAM	1000	1	0.15
+eco25	0.02	climate_noClimateChange_scenario_secondredo/eco25_noChange_climate_PnET.txt	LOAM	1000	1	0.15
+eco31	0.02	climate_noClimateChange_scenario_secondredo/eco31_noChange_climate_PnET.txt	SILO	1000	1	0.15
+eco32	0.02	climate_noClimateChange_scenario_secondredo/eco32_noChange_climate_PnET.txt	LOAM	1000	1	0.15
+eco33	0.02	climate_noClimateChange_scenario_secondredo/eco33_noChange_climate_PnET.txt	LOAM	1000	1	0.15
+eco34	0.02	climate_noClimateChange_scenario_secondredo/eco34_noChange_climate_PnET.txt	LOAM	1000	1	0.15
+eco35	0.02	climate_noClimateChange_scenario_secondredo/eco35_noChange_climate_PnET.txt	LOAM	1000	1	0.15
+eco42	0.02	climate_noClimateChange_scenario_secondredo/eco42_noChange_climate_PnET.txt	SILO	1000	1	0.15
+eco43	0.02	climate_noClimateChange_scenario_secondredo/eco43_noChange_climate_PnET.txt	LOAM	1000	1	0.15
+eco44	0.02	climate_noClimateChange_scenario_secondredo/eco44_noChange_climate_PnET.txt	LOAM	1000	1	0.15
+eco45	0.02	climate_noClimateChange_scenario_secondredo/eco45_noChange_climate_PnET.txt	LOAM	1000	1	0.15
+eco51	0.02	climate_noClimateChange_scenario_secondredo/eco51_noChange_climate_PnET.txt	SILO	1000	1	0.15
+eco52	0.02	climate_noClimateChange_scenario_secondredo/eco52_noChange_climate_PnET.txt	LOAM	1000	1	0.15
+eco53   0.02	climate_noClimateChange_scenario_secondredo/eco53_noChange_climate_PnET.txt	LOAM	1000	1	0.15
+eco54   0.26	climate_noClimateChange_scenario_secondredo/eco54_noChange_climate_PnET.txt	CLAY	1000	1	0.15
+eco55   0.26	climate_noClimateChange_scenario_secondredo/eco55_noChange_climate_PnET.txt	CLAY	1000	1	0.15
+
+
+>>	Soil	Percent	Percent	Field	Wilt	StormF	BaseF	Drain	Atmos	Atmos	Lat-	Decay   Decay  Decay	Decay  Denitrif
+>>	Depth	Clay	Sand	Cap	Point	Fract	Fract		N	N	itude	Rate    Rate   Rate     Rate
+>>      cm	frac	frac						slope	inter		Surf    SOM1   SOM2	SOM3
+>>eco11	100	0.26	0.27	0.27	0.15	0.2	0.2	1	0.0135	0.005	41	0.35	.32	0.05	0.0003	0.009
+>>eco12	100	0.23	0.42	0.18	0.09	0.2	0.2	1	0.0135	0.003	41	0.4	.35	0.1	0.0003	0.002
+>>eco13	100	0.24	0.42	0.2	0.11	0.2	0.2	1	0.0135	0.003	41	0.4	.35	0.1	0.0003	0.002
+>>eco14	100	0.19	0.51	0.03	0.02	0.2	0.2	1	0.0135	0.004	41	0.4	.35	0.1	0.0003	0.002
+>>eco15	100	0.22	0.46	0.09	0.05	0.2	0.2	1	0.0135	0.003	41	0.4	.35	0.1	0.0003	0.002
+>>eco21	100	0.26	0.27	0.27	0.15	0.2	0.2	1	0.012	0.003	41	0.35	.35	0.06	0.0003	0.007
+>>eco22	100	0.23	0.42	0.18	0.09	0.2	0.2	1	0.0135	0.003	41	0.4	.35	0.1	0.0003	0.003
+>>eco23	100	0.24	0.42	0.2	0.11	0.2	0.2	1	0.0135	0.003	41	0.4	.35	0.1	0.0003	0.003
+>>eco24	100	0.19	0.51	0.03	0.02	0.2	0.2	1	0.0135	0.005	41	0.4	.35	0.1	0.0003	0.002
+>>eco25	100	0.22	0.46	0.09	0.05	0.2	0.2	1	0.0135	0.003	41	0.4	.35	0.1	0.0003	0.002
+>>eco31	100	0.26	0.27	0.27	0.15	0.2	0.2	1	0.013	0.003	41	0.35	.35	0.06	0.0003	0.003
+>>eco32	100	0.23	0.42	0.18	0.09	0.2	0.2	1	0.0135	0.003	41	0.4	.35	0.1	0.0003	0.007
+>>eco33	100	0.24	0.42	0.2	0.11	0.2	0.2	1	0.0135	0.003	41	0.4	.35	0.1	0.0003	0.003
+>>eco34	100	0.19	0.51	0.03	0.02	0.2	0.2	1	0.0135	0.005	41	0.4	.35	0.1	0.0003	0.002
+>>eco35	100	0.22	0.46	0.09	0.05	0.2	0.2	1	0.0135	0.003	41	0.4	.35	0.06	0.0003	0.002
+>>eco42	100	0.26	0.27	0.27	0.15	0.2	0.2	1	0.0135	0.003	41	0.4	.35	0.06	0.0003	0.003
+>>eco43	100	0.24	0.42	0.2	0.11	0.2	0.2	1	0.0135	0.003	41	0.4	.35	0.1	0.0003	0.003
+>>eco44	100	0.19	0.51	0.03	0.02	0.2	0.2	1	0.013	0.005	41	0.4	.35	0.1	0.0003	0.002
+>>eco45	100	0.22	0.46	0.09	0.05	0.2	0.2	1	0.013	0.005	41	0.4	.35	0.06	0.0003	0.003
+>>eco51	100	0.26	0.27	0.27	0.15	0.2	0.2	1	0.0135	0.003	41	0.4	.35	0.1	0.0003	0.005
+>>eco52	100	0.23	0.42	0.18	0.09	0.2	0.2	1	0.0135	0.003	41	0.4	.35	0.1	0.0003	0.003
+>>eco53	100	0.24	0.42	0.2	0.11	0.2	0.2	1	0.0135	0.003	41	0.4	.35	0.1	0.0003	0.003
+>>eco54	100	0.19	0.51	0.03	0.02	0.2	0.2	1	0.0135	0.005	41	0.4	.35	0.1	0.0003	0.002
+>>eco55	100	0.22	0.46	0.09	0.05	0.2	0.2	1	0.0135	0.003	41	0.4	.3

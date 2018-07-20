@@ -1,0 +1,22 @@
+LandisData "PnET-Succession"
+PnET-Succession	Value  
+Timestep 10
+StartYear 2010 
+SeedingAlgorithm  WardSeedDispersal 
+
+Latitude  41 <<changed
+
+>>PNEToutputsites "CTRV_PNEToutputsites.txt" 
+
+InitialCommunities     ICsimplified_E4_v4_270M_5Species.txt 
+InitialCommunitiesMap   clippedRaster/initCommRasterFILLED.img	
+
+PnETSpeciesParameters  "PNET_SpeciesParameters_Klamath_DunbarNumbers.txt"  << 5 species total
+EcoregionParameters "Klamath_pnet_EcoregionParameters_A2Scenario.txt" << NoClimateChange.txt" <<
+PnETGenericParameters "PnETGenericParameters_Klamath_DunbarNumbers.txt" << done 
+
+
+
+
+>>EcoregionParameters  "CTRV_march2017_current_rcp85_pnet_EcoregionParameters.txt" 
+>>AgeOnlyDisturbances   "pnet_AgeOnlyDisturbances.txt" 
