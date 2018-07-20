@@ -1,4 +1,5 @@
-
+#Multiplying the prec column by the number of days in each month in all of the Ecoregions 
+#fles are in the PnET Climate data format
 
 pathToClimateFiles<- "C:/Users/hfintern/Desktop/climate_noClimateChange_scenario_redo"
 ecoFiles <- list.files(path=pathToClimateFiles,pattern = "_noChange_climate_PnET.txt")

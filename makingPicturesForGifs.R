@@ -1,13 +1,11 @@
-
-
 library(ggpubr)
 library(ggplot2)
 library(reshape2)
 library(raster)
 library(scales)
 
-
-scenarioPath <-"C:/Users/hfintern/Desktop/sa3_10YTS"## "C:/Users/hfintern/Desktop/sa3_Scenarios"
+#set up 
+scenarioPath <-"C:/Users/hfintern/Desktop/sa3_10YTS"
 
 sims <- list.dirs(scenarioPath, recursive = F, full.names = F)
 sims<- sims[!grepl("Graphs",sims)]
@@ -16,12 +14,11 @@ simus.selection <- sims
 general.root.path <- scenarioPath
 common.names <- c("A2 Climate","A2 Climate & LU","Recent Trends","Recent Trends & LU")#the order has to match the order of the simus.selection
 
-
 timesteps <- 1:9 * 10 
 timesteps
 
 
-
+#read in rasters 
 SeverityrasterStacks <- lapply (simus.selection, function (sim){
   
   setwd(general.root.path)
@@ -44,21 +41,6 @@ CutrasterStacks<- lapply (simus.selection, function (sim){
   return(rastack)
 })
 
-
-
-
-rs<-rasterStacks[[1]]
-sgdf<- as(rs, 'SpatialGridDataFrame')
-test<- spplot(sgdf,names.attr= common.names, main = list("Mean Fire Return Interval (Years)", cex=2),
-                        colorkey=list(height =.75, at=seq(10, 100, 10) ), labels=seq(10, 100, 10) ,  col.regions = colorRampPalette(c("red", "yellow","grey","white") ) )
-plot(notseededplots)
-
-
-one<- spplot(sgdf)
-two<- spplot(as(rasterStacks[[2]], 'SpatialGridDataFrame'))
-grid.arrange(one,two)
-
-legend<- one$legend
 
 #A2 Climate gif 
 setwd(scenarioPath)
