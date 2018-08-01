@@ -57,17 +57,11 @@ The only firebreak code in its else statement (around line 238) will need to be 
 Map Codes that should be useful when reading the R Scripts. 
 ------------------------------------------------------------------------
 The land owner map has the following codes:  (luMaster)
-
-1	- in study area 	
-
-101	- in study area & in Klamath National forest (Private Owners)
-
-111 	- in study area & in Klamath National forest & in National Wilderness area (Private Owners) 
-
-1101	- in study area & in Klamath National forest (Owned by Forest Service) 
-
-1111	- in study area & in Klamath National forest & in National Wilderness area (Owned by Forest Service) 
-
+1	- in study area
+101	- in study area & in Klamath National forest (Private Owners
+111 	- in study area & in Klamath National forest & in National Wilderness area (Private Owners)
+1101	- in study area & in Klamath National forest (Owned by Forest Service)
+1111	- in study area & in Klamath National forest & in National Wilderness area (Owned by Forest Service)
 NA 	- Outside of study area
 
 
